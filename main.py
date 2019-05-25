@@ -15,17 +15,18 @@ from classes.parser import Parser
 # i1 = i3
 text_input = """
     Program p1Main;
-        Function f1actoriel(Int i1;Int i2) : Int 
-        	Real r1var := #23.003 + i1, r2var;
+        Function f1actoriel(Int i1) : Int 
         	Bool b1;
+        	
 
         Begin
-            f1actoriel(i1-#1) 
+            f1actoriel(i1-#1) ;
+                        	Return i1*#9 - y6
+
         End;
         
         Begin
-            	f1e(#11,i8,o9+#0,Q1,#10 - #2);
-            	Return i1*#9 - y6
+            	f1e(#11,i8,o9+#0,Q1,#10 - #2)
         End;
 """
 lexer = Lexer().build()

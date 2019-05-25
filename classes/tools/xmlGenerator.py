@@ -175,27 +175,22 @@ class XMLGenerator:
 
     def gen_p_funcdec_declist(self, p):
         w = "<funcdec>"
-        w += "<FUNCTION>"
         w += str(p[1])
-        w += "</FUNCTION>"
-        w += "<ID>"
-        w += str(p[2])
-        w += "</ID>"
         w += "<OPEN_PAREN>"
-        w += str(p[3])
+        w += str(p[2])
         w += "</OPEN_PAREN>"
-        w += str(p[4])
+        w += str(p[3])
         w += "<CLOSE_PAREN>"
-        w += str(p[5])
+        w += str(p[4])
         w += "</CLOSE_PAREN>"
         w += "<COLON>"
-        w += str(p[6])
+        w += str(p[5])
         w += "</COLON>"
+        w += str(p[6])
         w += str(p[7])
         w += str(p[8])
-        w += str(p[9])
         w += "<SEMI_COLON>"
-        w += str(p[10])
+        w += str(p[9])
         w += "</SEMI_COLON>"
         w += "</funcdec>"
         p[0] = nonTerminal(w)
@@ -596,4 +591,13 @@ class XMLGenerator:
         w += "<SEPARATOR>" + p[2] + "</SEPARATOR>"
         w += str(p[3])
         w += "</explist>"
+        p[0] = nonTerminal(w)
+
+    def gen_p_funcname(self, p):
+        w = "<FUNCTION>"
+        w += str(p[1])
+        w += "</FUNCTION>"
+        w += "<ID>"
+        w += str(p[2])
+        w += "</ID>"
         p[0] = nonTerminal(w)

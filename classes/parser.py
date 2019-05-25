@@ -14,6 +14,7 @@ class Parser:
     tokens = Lexer().tokens
 
     def __init__(self):
+        self.funcId = []
         self.parser = None
         self.p = 0
         self.xmlGenerator = XMLGenerator()
@@ -142,14 +143,26 @@ class Parser:
     def p_procdec_declist(self, p):
         """procdec : PROCEDURE ID OPEN_PAREN paramdecslast CLOSE_PAREN declistlast block SEMI_COLON"""
         self.xmlGenerator.gen_p_procdec_declist(p)
-
-
-    def p_funcdec_declist(self, p):
-        """funcdec : FUNCTION ID OPEN_PAREN paramdecslast CLOSE_PAREN COLON type declistlast block SEMI_COLON"""
-        self.xmlGenerator.gen_p_funcdec_declist(p)
-        p[0].code+=p[8].code
+        p[0].code+=p[4].code+p[6].code
+        # block
         self.codeGen.declist_back_tac_generator(self.flag,self.p_declist_stack[self.p_declist_stack.__len__()-1],p)
         self.p_declist_stack.pop()
+        self.codeGen.paramdec_back_tac_generator(self.flag,self.p_paramdecs_stack[self.p_paramdecs_stack.__len__()-1],p)
+        self.p_paramdecs_stack.pop()
+
+    def p_intro_funcdec(self,p):
+        """funcname : FUNCTION ID """
+        self.xmlGenerator.gen_p_funcname(p)
+        self.funcId.append(p[2])
+    def p_funcdec_declist(self, p):
+        """funcdec : funcname OPEN_PAREN paramdecslast CLOSE_PAREN COLON type declistlast block SEMI_COLON"""
+        self.xmlGenerator.gen_p_funcdec_declist(p)
+        p[0].code+=p[3].code+p[7].code
+        # block
+        self.codeGen.declist_back_tac_generator(self.flag,self.p_declist_stack[self.p_declist_stack.__len__()-1],p)
+        self.p_declist_stack.pop()
+        self.codeGen.paramdec_back_tac_generator(self.flag,self.p_paramdecs_stack[self.p_paramdecs_stack.__len__()-1],p)
+        self.p_paramdecs_stack.pop()
 
     def p_paramdecs(self, p):
         """paramdecs : paramdec"""
@@ -328,7 +341,7 @@ class Parser:
     def p_stmt_return(self, p):
         """stmt : RETURN exp"""
         self.xmlGenerator.gen_p_stmt_return(p)
-        self.codeGen.Return_tac_generator(self.flag,p)
+        self.codeGen.Return_tac_generator(self.flag,p,self.funcId.pop())
 
     def p_stmt_exp(self, p):
         """stmt : exp"""
