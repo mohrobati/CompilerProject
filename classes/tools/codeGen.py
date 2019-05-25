@@ -374,6 +374,17 @@ class CodeGen:
             p[0].code+=param+"=*Top "+";\n"
             p[0].code+="Top = Top + 1 ;\n"
 
+    def backjmp_tac_generator(self, flag, returnLine,p):
+        if flag:
+            pass
+        p[0].code+="longjump :\n"
+        p[0].code+="gotoTemp = *Top ;\n"
+        p[0].code+="Top = Top + 1 ;\n"
+        for i in range(returnLine.__len__()):
+            p[0].code+="if (gotoTemp == "+str(i)+") goto "+returnLine[i]+";\n"
+
+
+
 
 
 

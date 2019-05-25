@@ -40,7 +40,9 @@ class Parser:
         """program : PROGRAM ID SEMI_COLON declistlast block SEMI_COLON"""
         self.xmlGenerator.gen_p_prog_declist(p)
         self.mktables()
-
+        p[0].code+=p[4].code+p[5].code
+        self.codeGen.backjmp_tac_generator(self.flag,self.returnLine,p)
+        print(p[0].code)
     def p_declist_last(self, p):
         """declistlast : declist"""
         p[0] = p[1]
@@ -149,6 +151,8 @@ class Parser:
         self.p_declist_stack.pop()
         self.codeGen.paramdec_back_tac_generator(self.flag,self.p_paramdecs_stack[self.p_paramdecs_stack.__len__()-1],p)
         self.p_paramdecs_stack.pop()
+        p[0].code+="*(float*)returnValue=1\n"
+        p[0].code+="goto longjump;\n"
 
     def p_intro_funcdec(self,p):
         """funcname : FUNCTION ID """
@@ -159,10 +163,12 @@ class Parser:
         self.xmlGenerator.gen_p_funcdec_declist(p)
         p[0].code+=p[3].code+p[7].code
         # block
+        p[0].code+="goto EN"+self.funcId.pop()
         self.codeGen.declist_back_tac_generator(self.flag,self.p_declist_stack[self.p_declist_stack.__len__()-1],p)
         self.p_declist_stack.pop()
         self.codeGen.paramdec_back_tac_generator(self.flag,self.p_paramdecs_stack[self.p_paramdecs_stack.__len__()-1],p)
         self.p_paramdecs_stack.pop()
+        p[0].code+="goto longjump;\n"
 
     def p_paramdecs(self, p):
         """paramdecs : paramdec"""
@@ -341,7 +347,7 @@ class Parser:
     def p_stmt_return(self, p):
         """stmt : RETURN exp"""
         self.xmlGenerator.gen_p_stmt_return(p)
-        self.codeGen.Return_tac_generator(self.flag,p,self.funcId.pop())
+        self.codeGen.Return_tac_generator(self.flag,p,self.funcId[self.funcId.__len__()-1])
 
     def p_stmt_exp(self, p):
         """stmt : exp"""
@@ -469,6 +475,7 @@ class Parser:
         p[0].type = 'func'
         self.codeGen.expfunc_tac_generator(self.flag, p, nextLabel, temp,self.returnLine.__len__())
         self.returnLine.append(nextLabel)
+        print(p[0].code)
 
     def p_explist(self, p):
         """explist : exp"""
