@@ -315,6 +315,7 @@ class CodeGen:
             p[0].code += word
         else:
             p[0].code += p[1].code + word
+
     def expfunc_tac_generator(self, flag, p, next_label, return_temp,val):
         if flag:
             pass
@@ -345,6 +346,17 @@ class CodeGen:
         word+="goto longjmp;\n"
         p[0].code+=p[2].code+word
 
+    def paramdec_append_tac_generator(self, flag, parameters,p):
+        if flag:
+            pass
+        parameters.reverse()
+        for param in parameters:
+            p[0].code += "Temp"+param+" = "+param+";\n"
+            p[0].code += param+" = *Top ; \n"
+            p[0].code += "Top = Top + 1\n"
+        for param in parameters:
+            p[0].code += "*Top = "+"Temp"+param+";\n"
+            p[0].code += "Top = Top - 1\n"
 
 
 

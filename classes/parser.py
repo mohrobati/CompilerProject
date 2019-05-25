@@ -107,7 +107,7 @@ class Parser:
         p[0].code+="*Top = "+idName+";\n"
         self.packets.append(ast.literal_eval(json.dumps(xmltodict.parse(str(p[0])))))
         if p[3].type != "bool":
-            p[0].code += (self.codeGen.assignment_tac_generator(self.flag, ast.literal_eval(json.dumps(xmltodict.parse(str(p[0]))))))
+            p[0].code += (self.codeGen.assignment_tac_generator(self.flag, ast.literal_eval(json.dumps(xmltodict.parse(str(p[0])))),p))
         else:
             p[0].code += (self.codeGen.boolean_tac_generator(self.flag, p, self.new_label(), self.new_label(), self.new_label()))
     def p_idlist_iddec(self, p):
@@ -132,6 +132,7 @@ class Parser:
         """paramdecslast : paramdecs"""
         p[0] = p[1]
         self.p_paramdecs_stack.append(p[0].parameters)
+        self.codeGen.paramdec_append_tac_generator(self.flag,p[0].parameters,p)
 
     def p_paramdecs_empty(self, p):
         """paramdecslast : """
@@ -324,7 +325,6 @@ class Parser:
         """stmt : RETURN exp"""
         self.xmlGenerator.gen_p_stmt_return(p)
         self.codeGen.Return_tac_generator(self.flag,p)
-        print(p[0].code)
 
     def p_stmt_exp(self, p):
         """stmt : exp"""
@@ -452,7 +452,6 @@ class Parser:
         p[0].type = 'func'
         self.codeGen.expfunc_tac_generator(self.flag, p, nextLabel, temp,self.returnLine.__len__())
         self.returnLine.append(nextLabel)
-        print(p[0].code)
 
     def p_explist(self, p):
         """explist : exp"""
