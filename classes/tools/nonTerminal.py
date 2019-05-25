@@ -16,6 +16,8 @@ class nonTerminal:
         self.label = ""
         self.code = ''''''
         self.quad = []
+        self.parameters=[]
+        self.number=""
 
     # self.otherAttribute=default
     def generate_code(self):

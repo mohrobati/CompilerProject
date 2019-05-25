@@ -1,5 +1,6 @@
 from ply import yacc
 from classes.lexer import Lexer
+from classes.tools.nonTerminal import nonTerminal
 from classes.tools.xmlGenerator import XMLGenerator
 from classes.tools.dictTraversal import DictTraversal
 from classes.tools.codeGen import CodeGen
@@ -30,28 +31,42 @@ class Parser:
         self.case_true_tmp = []
         self.case_false_tmp = ""
         self.flag = False
+        self.returnLine=[]
+        self.p_paramdecs_stack = []
+        self.p_declist_stack = []
 
     def p_prog_declist(self, p):
-        """program : PROGRAM ID SEMI_COLON declist block SEMI_COLON"""
+        """program : PROGRAM ID SEMI_COLON declistlast block SEMI_COLON"""
         self.xmlGenerator.gen_p_prog_declist(p)
         self.mktables()
 
-    def p_prog_block(self, p):
-        """program : PROGRAM ID SEMI_COLON block SEMI_COLON"""
-        self.xmlGenerator.gen_p_prog_block(p)
-        self.mktables()
+    def p_declist_last(self, p):
+        """declistlast : declist"""
+        p[0] = p[1]
+        self.p_declist_stack.append(p[0].parameters)
+
+    def p_declist_empty(self, p):
+        """declistlast : """
+        p[0] = nonTerminal("")
+        self.p_declist_stack.append(p[0].parameters)
 
     def p_declist(self, p):
         """declist : dec"""
         self.xmlGenerator.gen_p_declist(p)
+        p[0].code = p[1].code
+        p[0].parameters = p[1].parameters
 
     def p_declist_ext(self, p):
         """declist : declist dec"""
         self.xmlGenerator.gen_p_declist_ext(p)
+        p[0].code = p[1].code + p[2].code
+        p[0].parameters = p[1].parameters + p[2].parameters
 
     def p_dec_vardec(self, p):
         """dec : vardec"""
         self.xmlGenerator.gen_p_dec_vardec(p)
+        p[0].code = p[1].code
+        p[0].parameters = p[1].parameters
 
     def p_dec_procdec(self, p):
         """dec : procdec"""
@@ -60,6 +75,7 @@ class Parser:
     def p_dec_funcdec(self, p):
         """dec : funcdec"""
         self.xmlGenerator.gen_p_dec_funcdec(p)
+        p[0].code = p[1].code
 
     def p_type_int(self, p):
         """type : INT"""
@@ -75,63 +91,83 @@ class Parser:
 
     def p_iddec_id(self, p):
         """iddec : ID"""
+        idName = p[1]
         self.xmlGenerator.gen_p_iddec_id(p)
+        p[0].parameters.append(idName)
+        # p[0].code = idName + "=" + idName + "+1 ;\n"
 
     def p_iddec_exp(self, p):
         """iddec : ID ASSIGN exp"""
+        idName = p[1]
         self.xmlGenerator.gen_p_iddec_exp(p)
+        p[0].parameters.append(idName)
+        # p[0].code += idName + " = " + idName + " +1 ;\n"
         self.packets.append(ast.literal_eval(json.dumps(xmltodict.parse(str(p[0])))))
         if p[3].type != "bool":
-            print(self.codeGen.assignment_tac_generator(self.flag, ast.literal_eval(json.dumps(xmltodict.parse(str(p[0]))))))
+            p[0].code += (self.codeGen.assignment_tac_generator(self.flag, ast.literal_eval(json.dumps(xmltodict.parse(str(p[0]))))))
         else:
-            print(self.codeGen.boolean_tac_generator(self.flag, p, self.new_label(), self.new_label(), self.new_label()))
+            p[0].code += (self.codeGen.boolean_tac_generator(self.flag, p, self.new_label(), self.new_label(), self.new_label()))
     def p_idlist_iddec(self, p):
         """idlist : iddec"""
         self.xmlGenerator.gen_p_idlist_iddec(p)
+        p[0].parameters = p[1].parameters
+        p[0].code = p[1].code
 
     def p_idlist_ext(self, p):
         """idlist : idlist SEPARATOR iddec"""
         self.xmlGenerator.gen_p_idlist_ext(p)
+        p[0].parameters = p[1].parameters + p[3].parameters
+        p[0].code = p[1].code + p[3].code
 
     def p_vardec(self, p):
         """vardec : type idlist SEMI_COLON"""
         self.xmlGenerator.gen_p_vardec(p)
+        p[0].parameters = p[2].parameters
+        p[0].code = p[2].code
+    def p_paramdecs_last(self, p):
+        """paramdecslast : paramdecs"""
+        p[0] = p[1]
+        self.p_paramdecs_stack.append(p[0].parameters)
+    def p_paramdecs_empty(self, p):
+        """paramdecslast : """
+        p[0] = nonTerminal("")
+        self.p_paramdecs_stack.append(p[0].parameters)
 
     def p_procdec_declist(self, p):
-        """procdec : PROCEDURE ID OPEN_PAREN paramdecs CLOSE_PAREN declist block SEMI_COLON"""
+        """procdec : PROCEDURE ID OPEN_PAREN paramdecslast CLOSE_PAREN declistlast block SEMI_COLON"""
         self.xmlGenerator.gen_p_procdec_declist(p)
 
-    def p_procdec_block(self, p):
-        """procdec : PROCEDURE ID OPEN_PAREN paramdecs CLOSE_PAREN block SEMI_COLON"""
-        self.xmlGenerator.gen_p_procdec_block(p)
-
     def p_funcdec_declist(self, p):
-        """funcdec : FUNCTION ID OPEN_PAREN paramdecs CLOSE_PAREN COLON type declist block SEMI_COLON"""
+        """funcdec : FUNCTION ID OPEN_PAREN paramdecslast CLOSE_PAREN COLON type declistlast block SEMI_COLON"""
         self.xmlGenerator.gen_p_funcdec_declist(p)
-
-    def p_funcdec_block(self, p):
-        """funcdec : FUNCTION ID OPEN_PAREN paramdecs CLOSE_PAREN COLON type block SEMI_COLON"""
-        self.xmlGenerator.gen_p_funcdec_block(p)
 
     def p_paramdecs(self, p):
         """paramdecs : paramdec"""
         self.xmlGenerator.gen_p_paramdecs(p)
+        p[0].parameters = p[1].parameters
+
 
     def p_paramdecs_ext(self, p):
         """paramdecs : paramdecs SEMI_COLON paramdec"""
         self.xmlGenerator.gen_p_paramdecs_ext(p)
+        p[0].parameters = p[1].parameters + p[3].parameters
 
     def p_paramdec(self, p):
         """paramdec : type paramlist"""
         self.xmlGenerator.gen_p_paramdec(p)
+        p[0].parameters = p[2].parameters
 
     def p_paramlist(self, p):
         """paramlist : ID"""
         self.xmlGenerator.gen_p_paramlist(p)
+        p[0].parameters.append(p[1])
 
     def p_paramlist_ext(self, p):
         """paramlist : paramlist SEPARATOR ID"""
         self.xmlGenerator.gen_p_paramlist_ext(p)
+        p[0].parameters = p[1].parameters
+        p[0].parameters.append(p[3])
+        p[0].code = p[1].code + p[3].code
 
     def p_block_stmtlist(self, p):
         """block : BEGIN stmtlist END"""
@@ -402,20 +438,30 @@ class Parser:
         self.xmlGenerator.gen_p_exp_lvalue(p)
         #pointer assignment for every ID
         p[0].place = self.new_temp()
-        p[0].code = p[0].place + " = *" + p[1].place + " ;\n"
+        # p[0].code = p[0].place + " = *" + p[1].place + " ;\n"
         # print(p[0].code)
 
     def p_exp_func(self, p):
         """exp : ID OPEN_PAREN explist CLOSE_PAREN"""
         self.xmlGenerator.gen_p_exp_func(p)
+        temp = self.new_temp()
+        nextLabel = self.new_label()
+        p[0].type = 'func'
+        self.codeGen.expfunc_tac_generator(self.flag, p, nextLabel, temp,self.returnLine.__len__())
+        self.returnLine.append(nextLabel)
+        # print(p[0].code)
 
     def p_explist(self, p):
         """explist : exp"""
         self.xmlGenerator.gen_p_explist(p)
+        p[0].number = 1
+        self.codeGen.explist_tac_generator(self.flag, p)
 
     def p_explist_ext(self, p):
         """explist : explist SEPARATOR exp"""
         self.xmlGenerator.gen_p_explist_ext(p)
+        p[0].number = p[1].number + 1
+        self.codeGen.explist_tac_generator(self.flag, p)
 
 
     def p_error(self, p):

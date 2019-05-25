@@ -16,7 +16,8 @@ from classes.parser import Parser
 text_input = """
     Program p1Main;
         Begin
-            	i2:=True And Then True
+            	i2:=f1e(#11,i8,o9+#0,Q1,#10 - #2)
+            	
         End;
 """
 lexer = Lexer().build()
