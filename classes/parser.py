@@ -143,9 +143,13 @@ class Parser:
         """procdec : PROCEDURE ID OPEN_PAREN paramdecslast CLOSE_PAREN declistlast block SEMI_COLON"""
         self.xmlGenerator.gen_p_procdec_declist(p)
 
+
     def p_funcdec_declist(self, p):
         """funcdec : FUNCTION ID OPEN_PAREN paramdecslast CLOSE_PAREN COLON type declistlast block SEMI_COLON"""
         self.xmlGenerator.gen_p_funcdec_declist(p)
+        p[0].code+=p[8].code
+        self.codeGen.declist_back_tac_generator(self.flag,self.p_declist_stack[self.p_declist_stack.__len__()-1],p)
+        self.p_declist_stack.pop()
 
     def p_paramdecs(self, p):
         """paramdecs : paramdec"""

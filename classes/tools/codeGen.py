@@ -358,6 +358,13 @@ class CodeGen:
             p[0].code += "*Top = "+"Temp"+param+";\n"
             p[0].code += "Top = Top - 1\n"
 
+    def declist_back_tac_generator(self, flag, parameters, p):
+        if flag:
+            pass
+        parameters.reverse()
+        for param in parameters:
+            p[0].code+=param+"=*Top "+";\n"
+            p[0].code+="Top = Top + 1 ;\n"
 
 
 
