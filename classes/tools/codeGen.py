@@ -36,7 +36,7 @@ class CodeGen:
         if flag:
             pass
         else:
-            word = '*'
+            word = ""
             if 'assignstmt' in dic.keys():
                 word += dic['assignstmt']['lvalue']['ID'] + ' = '
                 if 'place' in dic['assignstmt']['exp'].keys():
@@ -288,9 +288,28 @@ class CodeGen:
             pass
         word = "Top = Top - 1 ;\n*Top = "
         if p[0].number == 1:
-            word += p[1].place
+
+            dic = ast.literal_eval(json.dumps(xmltodict.parse(str(p[1]))))
+            if 'place' in dic['exp'].keys():
+                word += dic['exp']['place']
+            elif 'lvalue' in dic['exp'].keys():
+                word += dic['exp']['lvalue']['ID']
+            elif 'VALUE' in dic['exp'].keys():
+                word += dic['exp']['VALUE']
+            else:
+                word += p[1].place
+
         else:
-            word += p[3].place
+            dic = ast.literal_eval(json.dumps(xmltodict.parse(str(p[3]))))
+            if 'place' in dic['exp'].keys():
+                word += dic['exp']['place']
+            elif 'lvalue' in dic['exp'].keys():
+                word += dic['exp']['lvalue']['ID']
+            elif 'VALUE' in dic['exp'].keys():
+                word += dic['exp']['VALUE']
+            else:
+                word += p[3].place
+
         word += ";\n"
         if p[0].number == 1:
             p[0].code += word
@@ -309,6 +328,22 @@ class CodeGen:
         p[0].code += word
         p[0].place = return_temp
 
+    def Return_tac_generator(self, flag, p):
+        if flag:
+            pass
+        dic = ast.literal_eval(json.dumps(xmltodict.parse(str(p[2]))))
+        word="*(float*)returnValue="
+        if 'place' in dic['exp'].keys():
+            word += dic['exp']['place']
+        elif 'lvalue' in dic['exp'].keys():
+            word += dic['exp']['lvalue']['ID']
+        elif 'VALUE' in dic['exp'].keys():
+            word += dic['exp']['VALUE']
+        else:
+            word += p[2].place
+        word+=";\n"
+        word+="goto longjmp;\n"
+        p[0].code+=p[2].code+word
 
 
 

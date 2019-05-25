@@ -71,6 +71,7 @@ class Parser:
     def p_dec_procdec(self, p):
         """dec : procdec"""
         self.xmlGenerator.gen_p_dec_procdec(p)
+        p[0].code=p[1].code
 
     def p_dec_funcdec(self, p):
         """dec : funcdec"""
@@ -94,14 +95,16 @@ class Parser:
         idName = p[1]
         self.xmlGenerator.gen_p_iddec_id(p)
         p[0].parameters.append(idName)
-        # p[0].code = idName + "=" + idName + "+1 ;\n"
+        p[0].code+="Top = Top - 1 ;\n"
+        p[0].code+="*Top = "+idName+";\n"
 
     def p_iddec_exp(self, p):
         """iddec : ID ASSIGN exp"""
         idName = p[1]
         self.xmlGenerator.gen_p_iddec_exp(p)
         p[0].parameters.append(idName)
-        # p[0].code += idName + " = " + idName + " +1 ;\n"
+        p[0].code+="Top = Top - 1 ;\n"
+        p[0].code+="*Top = "+idName+";\n"
         self.packets.append(ast.literal_eval(json.dumps(xmltodict.parse(str(p[0])))))
         if p[3].type != "bool":
             p[0].code += (self.codeGen.assignment_tac_generator(self.flag, ast.literal_eval(json.dumps(xmltodict.parse(str(p[0]))))))
@@ -124,10 +127,12 @@ class Parser:
         self.xmlGenerator.gen_p_vardec(p)
         p[0].parameters = p[2].parameters
         p[0].code = p[2].code
+
     def p_paramdecs_last(self, p):
         """paramdecslast : paramdecs"""
         p[0] = p[1]
         self.p_paramdecs_stack.append(p[0].parameters)
+
     def p_paramdecs_empty(self, p):
         """paramdecslast : """
         p[0] = nonTerminal("")
@@ -167,7 +172,6 @@ class Parser:
         self.xmlGenerator.gen_p_paramlist_ext(p)
         p[0].parameters = p[1].parameters
         p[0].parameters.append(p[3])
-        p[0].code = p[1].code + p[3].code
 
     def p_block_stmtlist(self, p):
         """block : BEGIN stmtlist END"""
@@ -319,6 +323,8 @@ class Parser:
     def p_stmt_return(self, p):
         """stmt : RETURN exp"""
         self.xmlGenerator.gen_p_stmt_return(p)
+        self.codeGen.Return_tac_generator(self.flag,p)
+        print(p[0].code)
 
     def p_stmt_exp(self, p):
         """stmt : exp"""
@@ -436,10 +442,7 @@ class Parser:
     def p_exp_lvalue(self, p):
         """exp : lvalue"""
         self.xmlGenerator.gen_p_exp_lvalue(p)
-        #pointer assignment for every ID
         p[0].place = self.new_temp()
-        # p[0].code = p[0].place + " = *" + p[1].place + " ;\n"
-        # print(p[0].code)
 
     def p_exp_func(self, p):
         """exp : ID OPEN_PAREN explist CLOSE_PAREN"""
@@ -449,7 +452,7 @@ class Parser:
         p[0].type = 'func'
         self.codeGen.expfunc_tac_generator(self.flag, p, nextLabel, temp,self.returnLine.__len__())
         self.returnLine.append(nextLabel)
-        # print(p[0].code)
+        print(p[0].code)
 
     def p_explist(self, p):
         """explist : exp"""
