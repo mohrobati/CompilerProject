@@ -97,6 +97,7 @@ class CodeGen:
             else:
                 word += p[3].place
             p[0].exp = word
+            p[0].code = p[1].code+p[3].code+word
 
     def boolean_tac_generator(self, flag, p, l_true, l_false, l_next):
         if flag:
@@ -113,7 +114,7 @@ class CodeGen:
                 word += "goto " + l_next + ";\n"
                 word += l_false + " : " + dic['lvalue']['ID'] + " = false;\n"
                 word += l_next + " : "
-                return word
+                return p[3].code+word
             else:
                 word = "if (" + p[3].exp + ") goto " + l_true + ";"
                 word += "\ngoto " + l_false + ";\n"
@@ -121,7 +122,7 @@ class CodeGen:
                 word += "goto " + l_next + ";\n"
                 word += l_false + " : " + dic['lvalue']['ID'] + " = false;\n"
                 word += l_next + " : "
-                return word
+                return p[3].code+word
 
     def if_tac_generator(self, flag, p, l_true, l_false):
         if flag:
@@ -134,7 +135,7 @@ class CodeGen:
                 op   = p[1].quad[1]
                 arg2 = p[1].quad[2]
                 self.patch(arg1, arg2, l_true, l_false, op)
-                print(l_true + " : ")
+                p[1].code += (l_true + " : ")
             else:
                 dic = ast.literal_eval(json.dumps(xmltodict.parse(str(p[1]))))
                 if p[1].exp is "":
@@ -142,14 +143,14 @@ class CodeGen:
                 word = "if (" + p[1].exp + ") goto " + l_true + ";"
                 word += "\ngoto " + l_false + ";\n"
                 word += l_true + " : "
-                print(word)
+                p[1].code += (word)
 
     def while_tac_generator(self, flag, p, l_true, l_false, l_begin):
         if flag:
             pass
         else:
             p[1].begin = l_begin
-            print(l_begin + " : ")
+            p[1].code += (l_begin + " : ")
             p[1].true = l_true
             p[1].false = l_false
             if len(p[1].quad) != 0:
@@ -157,19 +158,19 @@ class CodeGen:
                 op = p[1].quad[1]
                 arg2 = p[1].quad[2]
                 self.patch(arg1, arg2, l_true, l_false, op)
-                print(l_true + " : ")
+                p[1].code += (l_true + " : ")
             else:
                 word = "if (" + p[1].exp + ") goto " + l_true + ";"
                 word += "\ngoto " + l_false + ";\n"
                 word += l_true + " : "
-                print(word)
+                p[1].code += (word)
 
     def for_tac_generator(self, flag, p, id, l_true, l_false, l_begin, up):
         if flag:
             pass
         else:
             p[1].begin = l_begin
-            print(l_begin + " : ")
+            p[1].code += (l_begin + " : ")
             p[1].true = l_true
             p[1].false = l_false
             dic = ast.literal_eval(json.dumps(xmltodict.parse(str(p[1]))))
@@ -190,7 +191,7 @@ class CodeGen:
 
             word += "\ngoto " + l_false + ";\n"
             word += l_true + " : "
-            print(word)
+            p[0].code += (word)
 
     def switch_case_tac_generator(self, flag, p, id, value, l_true, l_false):
         if flag:
@@ -201,7 +202,7 @@ class CodeGen:
             word = 'if (' + id + " == " + str(value) + ") goto " + l_true + ";\n"
             word += "goto " + l_false + ";\n"
             word += l_true + " : "
-            print(word)
+            p[0].code+=(word)
 
     def patch(self, arg1, arg2, l_true, l_false, op):
         arg1_dic = ast.literal_eval(json.dumps(xmltodict.parse(str(arg1))))
@@ -329,7 +330,7 @@ class CodeGen:
         p[0].code += word
         p[0].place = return_temp
 
-    def Return_tac_generator(self, flag, p,funcId):
+    def return_tac_generator(self, flag, p,funcId):
         if flag:
             pass
         dic = ast.literal_eval(json.dumps(xmltodict.parse(str(p[2]))))

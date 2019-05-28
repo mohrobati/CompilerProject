@@ -14,11 +14,17 @@ from classes.parser import Parser
 # i2 = i3
 # i1 = i3
 text_input = """
-    Program p1Main;    
+    Program p1Main;
+        Function f1actoriel(Int i1) : Int 
         Begin
-                        t1:=t1+b1(#4) 
- 
+            If i1 .GE. #1 Then 
+                Return #1;
+            Return i1*f1actoriel(i1-#1) 
         End;
+        Begin
+         r1esult:=f1actoriel(#10)
+        End;
+
 """
 lexer = Lexer().build()
 parser = Parser()

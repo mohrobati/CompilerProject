@@ -25,7 +25,7 @@ class Parser:
         self.b_ctr = 0
         self.l_ctr = 0
         self.quad = 0
-        self.else_tmp = ""
+        self.else_tmp = []
         self.id_tmp = ""
         self.case_id_tmp = []
         self.case_int_tmp = ""
@@ -40,7 +40,7 @@ class Parser:
         """program : PROGRAM ID SEMI_COLON declistlast block SEMI_COLON"""
         self.xmlGenerator.gen_p_prog_declist(p)
         self.mktables()
-        p[0].code+=p[4].code+p[5].code
+        p[0].code+="goto Main;\n"+p[4].code+"Main:\n"+p[5].code
         self.codeGen.backjmp_tac_generator(self.flag,self.returnLine,p)
         print(p[0].code)
     def p_declist_last(self, p):
@@ -145,7 +145,8 @@ class Parser:
     def p_procdec_declist(self, p):
         """procdec : PROCEDURE ID OPEN_PAREN paramdecslast CLOSE_PAREN declistlast block SEMI_COLON"""
         self.xmlGenerator.gen_p_procdec_declist(p)
-        p[0].code+=p[4].code+p[6].code
+        p[0].code +="FF" +p[2]+" :\n"
+        p[0].code+=p[4].code+p[6].code+p[7].code
         # block
         self.codeGen.declist_back_tac_generator(self.flag,self.p_declist_stack[self.p_declist_stack.__len__()-1],p)
         self.p_declist_stack.pop()
@@ -161,9 +162,10 @@ class Parser:
     def p_funcdec_declist(self, p):
         """funcdec : funcname OPEN_PAREN paramdecslast CLOSE_PAREN COLON type declistlast block SEMI_COLON"""
         self.xmlGenerator.gen_p_funcdec_declist(p)
-        p[0].code+=p[3].code+p[7].code
+        p[0].code +="FF" +  self.funcId[self.funcId.__len__()-1]+" :\n"
+        p[0].code += p[3].code+p[7].code+p[8].code
         # block
-        p[0].code+="goto EN"+self.funcId.pop()
+        p[0].code+="EN"+self.funcId.pop()+" :\n"
         self.codeGen.declist_back_tac_generator(self.flag,self.p_declist_stack[self.p_declist_stack.__len__()-1],p)
         self.p_declist_stack.pop()
         self.codeGen.paramdec_back_tac_generator(self.flag,self.p_paramdecs_stack[self.p_paramdecs_stack.__len__()-1],p)
@@ -200,18 +202,22 @@ class Parser:
     def p_block_stmtlist(self, p):
         """block : BEGIN stmtlist END"""
         self.xmlGenerator.gen_p_block_stmtlist(p)
+        p[0].code += p[2].code
 
     def p_block_stmt(self, p):
         """block : stmt"""
         self.xmlGenerator.gen_p_block_stmt(p)
+        p[0].code += p[1].code
 
     def p_stmtlist(self, p):
         """stmtlist : stmt"""
         self.xmlGenerator.gen_p_stmtlist(p)
+        p[0].code += p[1].code
 
     def p_stmtlist_ext(self, p):
         """stmtlist : stmtlist SEMI_COLON stmt"""
         self.xmlGenerator.gen_p_stmtlist_ext(p)
+        p[0].code += p[1].code + p[3].code
 
     def p_lvalue(self, p):
         """lvalue : ID"""
@@ -225,39 +231,47 @@ class Parser:
         self.xmlGenerator.gen_p_assign_stmt_assign(p)
         self.packets.append(ast.literal_eval(json.dumps(xmltodict.parse(str(p[0])))))
         if p[3].type != "bool":
-            print(self.codeGen.assignment_tac_generator(self.flag, ast.literal_eval(json.dumps(xmltodict.parse(str(p[0])))),p))
+            p[0].code += (self.codeGen.assignment_tac_generator(self.flag, ast.literal_eval(json.dumps(xmltodict.parse(str(p[0])))),p))
         else:
-            print(self.codeGen.boolean_tac_generator(self.flag, p, self.new_label(), self.new_label(), self.new_label()))
+            p[0].code += (self.codeGen.boolean_tac_generator(self.flag, p, self.new_label(), self.new_label(), self.new_label()))
 
     def p_assign_stmt_assign(self, p):
         """stmt : assignstmt"""
         self.xmlGenerator.gen_p_stmt_assign(p)
+        p[0].code += p[1].code
 
     def p_stmt_if(self, p):
         """stmt : IF controlifexp THEN block"""
         self.xmlGenerator.gen_p_stmt_if(p)
-        print(p[2].false + " : ")
+        p[0].code += p[2].code + p[4].code +( p[2].false +":\n")
 
     def p_stmt_if_else(self, p):
         """stmt : IF controlifexp THEN block ELSE controlelse block"""
         self.xmlGenerator.gen_p_stmt_if_else(p)
+        p[0].code += p[2].code + p[4].code + p[6].code + p[7].code + (p[6].label+":\n")
+
 
     def p_control_if_exp(self, p):
         """controlifexp : exp"""
         self.xmlGenerator.gen_p_control_if_exp(p)
         self.codeGen.if_tac_generator(self.flag, p, self.new_label(), self.new_label())
-        self.else_tmp = p[1].false
+        self.else_tmp.append(p[1].false)
         p[0] = p[1]
 
     def p_controlelse(self, p):
         """controlelse : """
-        print(self.else_tmp + " : ")
+        p[0] = nonTerminal("")
+        new_label=self.new_label()
+        p[0].code += ("goto "+new_label+" ;")
+        p[0].label=new_label
+        p[0].code += (self.else_tmp.pop() + " : ")
 
     def p_stmt_while(self, p):
         """stmt : WHILE controlwhileexp DO block"""
         self.xmlGenerator.gen_p_stmt_while(p)
-        print("goto " + p[2].begin + ";")
-        print(p[2].false + " : ")
+        p[0].code += p[2].code + p[4].code
+        p[0].code += ("goto " + p[2].begin + ";")
+        p[0].code += (p[2].false + " : ")
 
     def p_control_while_exp(self, p):
         """controlwhileexp : exp"""
@@ -272,10 +286,11 @@ class Parser:
         dic = ast.literal_eval(json.dumps(xmltodict.parse(str(p[2]))))
         id = dic['assignstmt']['lvalue']['ID']
         tmp = self.new_temp()
-        print(tmp + " = " + id + " + 1;")
-        print(id + " = " + tmp)
-        print("goto " + p[4].begin + ";")
-        print(p[4].false + " : ")
+        p[0].code += p[2].code + p[4].code + p[6].code
+        p[0].code += (tmp + " = " + id + " + 1;")
+        p[0].code += (id + " = " + tmp)
+        p[0].code += ("goto " + p[4].begin + ";")
+        p[0].code += (p[4].false + " : ")
 
     def p_stmt_for_down(self, p):
         """stmt : FOR assignstmt DOWNTO controlfordownexp DO block"""
@@ -283,10 +298,11 @@ class Parser:
         dic = ast.literal_eval(json.dumps(xmltodict.parse(str(p[2]))))
         id = dic['assignstmt']['lvalue']['ID']
         tmp = self.new_temp()
-        print(tmp + " = " + id + " - 1;")
-        print(id + " = " + tmp)
-        print("goto " + p[4].begin + ";")
-        print(p[4].false + " : ")
+        p[0].code += p[2].code + p[4].code + p[6].code
+        p[0].code += (tmp + " = " + id + " - 1;")
+        p[0].code += (id + " = " + tmp)
+        p[0].code += ("goto " + p[4].begin + ";")
+        p[0].code += (p[4].false + " : ")
 
     def p_control_for_up_exp(self, p):
         """controlforupexp : exp"""
@@ -303,7 +319,8 @@ class Parser:
     def p_stmt_case(self, p):
         """stmt : CASE controlcaseexp caseelement END"""
         self.xmlGenerator.gen_p_stmt_case(p)
-        print(self.case_true_tmp.pop() + " : ")
+        p[0].code += p[2].code + p[3].code
+        p[0].code += (self.case_true_tmp.pop() + " : ")
         self.case_id_tmp.pop()
 
     def p_control_case_exp(self, p):
@@ -317,18 +334,21 @@ class Parser:
         else:
             self.case_id_tmp.append(dic['exp']['VALUE'])
         self.case_true_tmp.append(self.new_label())
+        p[0].code += p[1].code
 
     def p_caseelement(self, p):
         """ caseelement : case COLON caseelementcontrol block SEMI_COLON"""
         self.xmlGenerator.gen_p_caseelement(p)
-        print("goto " + self.case_true_tmp[len(self.case_true_tmp)-1] + ";")
-        print(p[3].false + " : ")
+        p[0].code += p[1].code + p[3].code + p[4].code
+        p[0].code += ("goto " + self.case_true_tmp[len(self.case_true_tmp)-1] + ";")
+        p[0].code += (p[3].false + " : ")
 
     def p_caseelement_ext(self, p):
         """ caseelement : caseelement case COLON caseelementcontrol block SEMI_COLON"""
         self.xmlGenerator.gen_p_caseelement_ext(p)
-        print("goto " + self.case_true_tmp[len(self.case_true_tmp)-1] + ";")
-        print(p[4].false + " : ")
+        p[0].code += p[1].code + p[2].code + p[4].code + p[5].code
+        p[0].code += ("goto " + self.case_true_tmp[len(self.case_true_tmp)-1] + ";")
+        p[0].code += (p[4].false + " : ")
 
 
     def p_case_element_control(self, p):
@@ -347,11 +367,12 @@ class Parser:
     def p_stmt_return(self, p):
         """stmt : RETURN exp"""
         self.xmlGenerator.gen_p_stmt_return(p)
-        self.codeGen.Return_tac_generator(self.flag,p,self.funcId[self.funcId.__len__()-1])
+        self.codeGen.return_tac_generator(self.flag,p,self.funcId[self.funcId.__len__()-1])
 
     def p_stmt_exp(self, p):
         """stmt : exp"""
         self.xmlGenerator.gen_p_stmt_exp(p)
+        p[0].code=p[1].code
 
     def p_exp_sum(self, p):
         """exp : exp SUM exp"""
@@ -387,7 +408,7 @@ class Parser:
         p[0].quad.append(p[1])
         p[0].quad.append(p[2])
         p[0].quad.append(p[3])
-
+        # p[0].code=p[1].code+p[3].code
     def p_exp_or(self, p):
         """exp : exp OR exp"""
         self.xmlGenerator.gen_p_exp_or(p)
@@ -475,7 +496,7 @@ class Parser:
         p[0].type = 'func'
         self.codeGen.expfunc_tac_generator(self.flag, p, nextLabel, temp,self.returnLine.__len__())
         self.returnLine.append(nextLabel)
-        print(p[0].code)
+        # print(p[0].code)
 
     def p_explist(self, p):
         """explist : exp"""
