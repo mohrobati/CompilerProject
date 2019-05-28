@@ -59,7 +59,7 @@ class CodeGen:
                     word += dic['iddec']['exp']['VALUE']
                 else:
                     word+=p[3].place
-            return p[3].code+word + ";"
+            return p[3].code+word + ";\n"
 
     def relop_tac_generator(self, flag, p):
         if flag:
@@ -143,7 +143,9 @@ class CodeGen:
                 word = "if (" + p[1].exp + ") goto " + l_true + ";"
                 word += "\ngoto " + l_false + ";\n"
                 word += l_true + " : "
-                p[1].code += (word)
+                # print(p[1].code)
+
+                p[1].code = (word)
 
     def while_tac_generator(self, flag, p, l_true, l_false, l_begin):
         if flag:
@@ -313,9 +315,9 @@ class CodeGen:
 
         word += ";\n"
         if p[0].number == 1:
-            p[0].code += word
+            p[0].code += p[1].code+ word
         else:
-            p[0].code += p[1].code + word
+            p[0].code += p[1].code +p[3].code+  word
 
     def expfunc_tac_generator(self, flag, p, next_label, return_temp,val):
         if flag:
@@ -378,6 +380,7 @@ class CodeGen:
     def backjmp_tac_generator(self, flag, returnLine,p):
         if flag:
             pass
+        p[0].code+="return 0;\n"
         p[0].code+="longjump :\n"
         p[0].code+="gotoTemp = *Top ;\n"
         p[0].code+="Top = Top + 1 ;\n"

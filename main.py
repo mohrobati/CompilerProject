@@ -17,7 +17,7 @@ text_input = """
     Program p1Main;
         Function f1actoriel(Int i1) : Int 
         Begin
-            If i1 .GE. #1 Then 
+            If i1 .LE. #1 Then 
                 Return #1;
             Return i1*f1actoriel(i1-#1) 
         End;
