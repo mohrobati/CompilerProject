@@ -151,7 +151,7 @@ class Parser:
         self.p_declist_stack.pop()
         self.codeGen.paramdec_back_tac_generator(self.flag,self.p_paramdecs_stack[self.p_paramdecs_stack.__len__()-1],p)
         self.p_paramdecs_stack.pop()
-        p[0].code+="*(float*)returnValue=1\n"
+        p[0].code+="*(float*)returnValue=1;\n"
         p[0].code+="goto longjump;\n"
 
     def p_intro_funcdec(self,p):

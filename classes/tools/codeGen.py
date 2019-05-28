@@ -14,7 +14,7 @@ class CodeGen:
             if 'VALUE' in dic['exp']['exp'][0].keys():
                 word += dic['exp']['exp'][0]['VALUE']
             elif 'lvalue' in dic['exp']['exp'][0].keys():
-                word += p[1].place #dic['exp']['exp'][0]['lvalue']['ID']
+                word += dic['exp']['exp'][0]['lvalue']['ID']
             elif 'place' in dic['exp']['exp'][0].keys():
                 word += dic['exp']['exp'][0]['place']
             else:
@@ -24,7 +24,7 @@ class CodeGen:
             if 'VALUE' in dic['exp']['exp'][1].keys():
                 word += dic['exp']['exp'][1]['VALUE']
             elif 'lvalue' in dic['exp']['exp'][1].keys():
-                word += p[3].place #dic['exp']['exp'][1]['lvalue']['ID']
+                word += dic['exp']['exp'][1]['lvalue']['ID']
             elif 'place' in dic['exp']['exp'][1].keys():
                 word += dic['exp']['exp'][1]['place']
             else:
