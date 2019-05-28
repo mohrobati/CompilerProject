@@ -21,8 +21,17 @@ text_input = """
                 Return #1;
             Return i1*f1actoriel(i1-#1) 
         End;
+        Function f1tavan(Int i1;Real i2) : Int 
         Begin
-         r1esult:=f1actoriel(#10)
+            If i2 .LT. #0 Then 
+                Return #1;
+            Return i1*f1tavan(i1,i2-#1) 
+        End;
+        
+        Begin
+         r1esult:=f1actoriel(#10) ;
+         r1esult:=f1tavan(#3,#3 + #2)
+         
         End;
 
 """

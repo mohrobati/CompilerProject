@@ -143,9 +143,8 @@ class CodeGen:
                 word = "if (" + p[1].exp + ") goto " + l_true + ";"
                 word += "\ngoto " + l_false + ";\n"
                 word += l_true + " : "
-                # print(p[1].code)
 
-                p[1].code = (word)
+                p[1].code += (word)
 
     def while_tac_generator(self, flag, p, l_true, l_false, l_begin):
         if flag:
