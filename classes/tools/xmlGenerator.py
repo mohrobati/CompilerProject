@@ -364,6 +364,15 @@ class XMLGenerator:
         w += "</controlifexp>"
         p[0] = nonTerminal(w)
 
+    def gen_p_print(self, p):
+        w = "<stmt>"
+        w += "<PRINT>" + p[1] + "</PRINT>"
+        w += "<OPEN_PAREN>" + p[2] + "</OPEN_PAREN>"
+        w += "<ID>" + p[3] + "</ID>"
+        w += "<CLOSE_PAREN>" + p[4] + "</CLOSE_PAREN>"
+        w += "</stmt>"
+        p[0] = nonTerminal(w)
+
     def gen_p_control_while_exp(self, p):
         w = "<controlwhileexp>"
         w += str(p[1])

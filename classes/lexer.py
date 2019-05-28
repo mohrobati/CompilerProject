@@ -9,7 +9,7 @@ class Lexer():
         'SUB', 'THEN', 'FUNCTION', 'CLOSE_PAREN', 'DIV', 'ELSE',
         'EQ', 'FALSE', 'SEMI_COLON', 'RETURN', 'BOOL', 'LT',
         'BEGIN', 'ID', 'CASE', 'DOWNTO', 'GE', 'NE', 'INTEGER', 'REALNUMBER',
-        'ASSIGN', #'ERROR'
+        'ASSIGN','PRINT' #'ERROR'
     ]
     reserved = {
         # Conditional
@@ -25,6 +25,7 @@ class Lexer():
         'Real': 'REAL',
         # Other Keywords
         'Program': 'PROGRAM',
+        'Print' : 'PRINT',
         'To': 'TO',
         'True': 'TRUE',
         'False': 'FALSE',

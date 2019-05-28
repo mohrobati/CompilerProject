@@ -22,7 +22,6 @@ class Parser:
         self.symbolTables = []
         self.packets = []
         self.t_ctr = 0
-        self.b_ctr = 0
         self.l_ctr = 0
         self.quad = 0
         self.else_tmp = []
@@ -35,6 +34,7 @@ class Parser:
         self.returnLine=[]
         self.p_paramdecs_stack = []
         self.p_declist_stack = []
+        self.generatedCode = ""
 
     def p_prog_declist(self, p):
         """program : PROGRAM ID SEMI_COLON declistlast block SEMI_COLON"""
@@ -42,7 +42,28 @@ class Parser:
         self.mktables()
         p[0].code+="goto Main;\n"+p[4].code+"Main:\n"+p[5].code
         self.codeGen.backjmp_tac_generator(self.flag,self.returnLine,p)
-        print(p[0].code)
+        codes = p[0].code.split("\n")
+        t = 0
+        for code in codes:
+            t = t + 1
+            if code[0:2] == "FF":
+                t = t-1
+                break
+        if t != len(codes):
+            codes_tmp = []
+            codes_tmp.append(codes[0])
+            for p in range(t, len(codes)):
+                codes_tmp.append(codes[p])
+            for p in range(1, t):
+                codes_tmp.insert(p-1, codes[p])
+            for code in codes_tmp:
+                self.generatedCode += code + "\n"
+        else:
+            for code in codes[1:]:
+                self.generatedCode += code + "\n"
+
+
+
     def p_declist_last(self, p):
         """declistlast : declist"""
         p[0] = p[1]
@@ -250,7 +271,6 @@ class Parser:
         self.xmlGenerator.gen_p_stmt_if_else(p)
         p[0].code += p[2].code + p[4].code + p[6].code + p[7].code + (p[6].label+":\n")
 
-
     def p_control_if_exp(self, p):
         """controlifexp : exp"""
         self.xmlGenerator.gen_p_control_if_exp(p)
@@ -262,22 +282,26 @@ class Parser:
         """controlelse : """
         p[0] = nonTerminal("")
         new_label=self.new_label()
-        p[0].code += ("goto "+new_label+" ;")
+        p[0].code += ("goto "+new_label+" ;\n")
         p[0].label=new_label
-        p[0].code += (self.else_tmp.pop() + " : ")
+        p[0].code += (self.else_tmp.pop() + " : \n")
+
+    def p_print(self, p):
+        """stmt : PRINT OPEN_PAREN ID CLOSE_PAREN"""
+        self.xmlGenerator.gen_p_print(p)
+        p[0].code = "printf(\"%f\", " + p[3] + ");\n"
 
     def p_stmt_while(self, p):
         """stmt : WHILE controlwhileexp DO block"""
         self.xmlGenerator.gen_p_stmt_while(p)
         p[0].code += p[2].code + p[4].code
-        p[0].code += ("goto " + p[2].begin + ";")
-        p[0].code += (p[2].false + " : ")
+        p[0].code += ("goto " + p[2].begin + ";\n")
+        p[0].code += (p[2].false + " : \n")
 
     def p_control_while_exp(self, p):
         """controlwhileexp : exp"""
         self.xmlGenerator.gen_p_control_while_exp(p)
         self.codeGen.while_tac_generator(self.flag, p, self.new_label(), self.new_label(), self.new_label())
-        self.else_tmp = p[1].false
         p[0] = p[1]
 
     def p_stmt_for_up(self, p):
@@ -287,10 +311,10 @@ class Parser:
         id = dic['assignstmt']['lvalue']['ID']
         tmp = self.new_temp()
         p[0].code += p[2].code + p[4].code + p[6].code
-        p[0].code += (tmp + " = " + id + " + 1;")
-        p[0].code += (id + " = " + tmp)
-        p[0].code += ("goto " + p[4].begin + ";")
-        p[0].code += (p[4].false + " : ")
+        p[0].code += (tmp + " = " + id + " + 1;\n")
+        p[0].code += (id + " = " + tmp + ";\n")
+        p[0].code += ("goto " + p[4].begin + ";\n")
+        p[0].code += (p[4].false + " : \n")
 
     def p_stmt_for_down(self, p):
         """stmt : FOR assignstmt DOWNTO controlfordownexp DO block"""
@@ -299,10 +323,10 @@ class Parser:
         id = dic['assignstmt']['lvalue']['ID']
         tmp = self.new_temp()
         p[0].code += p[2].code + p[4].code + p[6].code
-        p[0].code += (tmp + " = " + id + " - 1;")
-        p[0].code += (id + " = " + tmp)
-        p[0].code += ("goto " + p[4].begin + ";")
-        p[0].code += (p[4].false + " : ")
+        p[0].code += (tmp + " = " + id + " - 1;\n")
+        p[0].code += (id + " = " + tmp + ";\n")
+        p[0].code += ("goto " + p[4].begin + ";\n")
+        p[0].code += (p[4].false + " : \n")
 
     def p_control_for_up_exp(self, p):
         """controlforupexp : exp"""
@@ -320,7 +344,7 @@ class Parser:
         """stmt : CASE controlcaseexp caseelement END"""
         self.xmlGenerator.gen_p_stmt_case(p)
         p[0].code += p[2].code + p[3].code
-        p[0].code += (self.case_true_tmp.pop() + " : ")
+        p[0].code += (self.case_true_tmp.pop() + " : \n")
         self.case_id_tmp.pop()
 
     def p_control_case_exp(self, p):
@@ -340,15 +364,15 @@ class Parser:
         """ caseelement : case COLON caseelementcontrol block SEMI_COLON"""
         self.xmlGenerator.gen_p_caseelement(p)
         p[0].code += p[1].code + p[3].code + p[4].code
-        p[0].code += ("goto " + self.case_true_tmp[len(self.case_true_tmp)-1] + ";")
-        p[0].code += (p[3].false + " : ")
+        p[0].code += ("goto " + self.case_true_tmp[len(self.case_true_tmp)-1] + ";\n")
+        p[0].code += (p[3].false + " : \n")
 
     def p_caseelement_ext(self, p):
         """ caseelement : caseelement case COLON caseelementcontrol block SEMI_COLON"""
         self.xmlGenerator.gen_p_caseelement_ext(p)
         p[0].code += p[1].code + p[2].code + p[4].code + p[5].code
-        p[0].code += ("goto " + self.case_true_tmp[len(self.case_true_tmp)-1] + ";")
-        p[0].code += (p[4].false + " : ")
+        p[0].code += ("goto " + self.case_true_tmp[len(self.case_true_tmp)-1] + ";\n")
+        p[0].code += (p[4].false + " : \n")
 
 
     def p_case_element_control(self, p):
@@ -532,11 +556,6 @@ class Parser:
     def new_temp(self):
         string = 'TT' + str(self.t_ctr)
         self.t_ctr += 1
-        return string
-
-    def new_bool(self):
-        string = 'BB' + str(self.b_ctr)
-        self.b_ctr += 1
         return string
 
     def new_label(self):

@@ -1,43 +1,27 @@
 from classes.lexer import Lexer
 from classes.parser import Parser
-# i2 = −23
-# T0 = 2 − 1
-# T1 = 3 / T0
-# T2 = 0−T1
-# i3 = T2
-# T3 = 23.003 + i1
-# r1var = T3
-# i1 = i2
-# i2 = i3
-# T4 = i1/i2
-# i1 = T4
-# i2 = i3
-# i1 = i3
+from classes.toC import ToC
+
 text_input = """
     Program p1Main;
-        Function f1actoriel(Int i1) : Int 
+        Int i2 := #34;
+        Int i3 := #0;
         Begin
-            If i1 .LE. #1 Then 
-                Return #1;
-            Return i1*f1actoriel(i1-#1) 
-        End;
-        Function f1tavan(Int i1;Real i2) : Int 
-        Begin
-            If i2 .LT. #0 Then 
-                Return #1;
-            Return i1*f1tavan(i1,i2-#1) 
-        End;
-        
-        Begin
-         r1esult:=f1actoriel(#10) ;
-         r1esult:=f1tavan(#3,#3 + #2)
-         
+            While i2 .GT. #30 Do
+                Begin
+                    i3 := i3 + #1;
+                    i2 := i2 - #1   
+                End;
+            Print(i3)
         End;
 
 """
 lexer = Lexer().build()
 parser = Parser()
 parser.build().parse(text_input, lexer, False)
+to_c = ToC(parser.t_ctr, parser.generatedCode, parser.symbolTables)
+to_c.run()
+
 
 # for table in parser.symbolTables:
 #     print(table.name, ':')
@@ -47,18 +31,3 @@ parser.build().parse(text_input, lexer, False)
 #
 # for table in parser.symbolTables:
 #     print(table.name, table.address, table.size, table.outerScopeAddress)
-
-# if (a1 < b1) goto LL4;
-# goto LL0;
-# LL0 : if (c1 < d1) goto LL3;
-# goto LL5;
-# LL3 : if (e1 < f1) goto LL4;
-# goto LL2;
-# LL2 : if (g1 < h1) goto LL1;
-# goto LL5;
-# LL1 : if (i1 < j1) goto LL4;
-# goto LL5;
-# LL4 : t1 = true;
-# goto LL6;
-# LL5 : t1 = false;
-# LL6 :
