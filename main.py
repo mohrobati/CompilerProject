@@ -13,9 +13,9 @@ from classes.toC import ToC
 #             a1 := #3 .LT. #4 Or Else #43 .EQ. #34;
 #             Print(a1)
 #         End;
-#
+#++++++++++++++++++++++
 # """
-filer = open("test-cases/function/procedure.txt", "r")
+filer = open("test-cases/function/comb", "r")
 text_input = filer.read()
 filer.close()
 lexer = Lexer().build()

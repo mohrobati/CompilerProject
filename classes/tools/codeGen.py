@@ -210,7 +210,6 @@ class CodeGen:
             word += "\ngoto " + l_false + ";\n"
             word += l_true + " : \n"
             p[1].code += (word)
-            print()
 
     def switch_case_tac_generator(self, flag, p, id, value, l_true, l_false):
         if flag:
@@ -425,6 +424,13 @@ class CodeGen:
         p[0].code+="Top = Top + 1 ;\n"
         for i in range(returnLine.__len__()):
             p[0].code+="if (gotoTemp == "+str(i)+") goto "+returnLine[i]+";\n"
+
+    def Temp_append_tac_generator(self, flag, parameters, p):
+        if flag:
+            pass
+        for param in parameters:
+             p[0].code+="Top = Top - 1 ;\n"
+             p[0].code+="*Top = "+param+";\n"
 
 
 

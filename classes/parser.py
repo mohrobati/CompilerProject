@@ -35,6 +35,8 @@ class Parser:
         self.p_paramdecs_stack = []
         self.p_declist_stack = []
         self.generatedCode = ""
+        self.p_temp_stack=[]
+        self.p_temp_stack.append(self.p_temp_stack)
 
     def p_prog_declist(self, p):
         """program : PROGRAM ID SEMI_COLON declistlast block SEMI_COLON"""
@@ -69,11 +71,16 @@ class Parser:
         """declistlast : declist"""
         p[0] = p[1]
         self.p_declist_stack.append(p[0].parameters)
+        v=[]
+        self.p_temp_stack.append(v)
+
 
     def p_declist_empty(self, p):
         """declistlast : """
         p[0] = nonTerminal("")
         self.p_declist_stack.append(p[0].parameters)
+        v=[]
+        self.p_temp_stack.append(v)
 
     def p_declist(self, p):
         """declist : dec"""
@@ -172,8 +179,14 @@ class Parser:
         self.xmlGenerator.gen_p_procdec_declist(p)
         p[0].code +="goto AF"+p[2]+" ;\n"
         p[0].code +="FF" +p[2]+" :\n"
-        p[0].code+=p[4].code+p[6].code+p[7].code
+        p[0].code+=p[4].code+p[6].code
+
+        self.codeGen.Temp_append_tac_generator(self.flag,self.p_temp_stack[self.p_temp_stack.__len__()-1], p)
+        p[0].code+=p[7].code
         # block
+
+        self.p_declist_stack[self.p_declist_stack.__len__()-1] += self.p_temp_stack.pop()
+
         self.codeGen.declist_back_tac_generator(self.flag,self.p_declist_stack[self.p_declist_stack.__len__()-1],p)
         self.p_declist_stack.pop()
         self.codeGen.paramdec_back_tac_generator(self.flag,self.p_paramdecs_stack[self.p_paramdecs_stack.__len__()-1],p)
@@ -193,8 +206,15 @@ class Parser:
         p[0].code +="goto AF" +  self.funcId[self.funcId.__len__()-1]+" ;\n"
 
         p[0].code +="FF" +  self.funcId[self.funcId.__len__()-1]+" :\n"
-        p[0].code += p[3].code+p[7].code+p[8].code
+        p[0].code+=p[3].code+p[7].code
+
+
+        self.codeGen.Temp_append_tac_generator(self.flag,self.p_temp_stack[self.p_temp_stack.__len__()-1], p)
+
+        p[0].code+=p[8].code
         # block
+        self.p_declist_stack[self.p_declist_stack.__len__()-1] += self.p_temp_stack.pop()
+
         p[0].code+="EN"+  self.funcId[self.funcId.__len__()-1]+" :\n"
         self.codeGen.declist_back_tac_generator(self.flag,self.p_declist_stack[self.p_declist_stack.__len__()-1],p)
         self.p_declist_stack.pop()
@@ -564,6 +584,13 @@ class Parser:
 
     def new_temp(self):
         string = 'TT' + str(self.t_ctr)
+
+        self.debv(self.p_temp_stack)
+        # self.debv(self.p_temp_stack[self.p_temp_stack.__len__()-1])
+        (self.p_temp_stack[self.p_temp_stack.__len__()-1]).insert(self.p_temp_stack[self.p_temp_stack.__len__()-1].__len__()-1,string)
+        self.debv(self.p_temp_stack)
+        # self.debv(self.p_temp_stack[self.p_temp_stack.__len__()-1])
+        print("\n\n\n")
         self.t_ctr += 1
         return string
 
@@ -571,7 +598,11 @@ class Parser:
         string = 'LL' + str(self.l_ctr)
         self.l_ctr += 1
         return string
-
+    def debv(self,ss):
+        print("NEW")
+        for i in ss:
+            print(i)
+        print("\n")
     def mktables(self):
         doc = xmltodict.parse(self.xmlGenerator.w)
         # print(ast.literal_eval(json.dumps(doc,indent=10)))

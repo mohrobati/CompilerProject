@@ -1,0 +1,25 @@
+Program p1Main;
+    Int a1 ;
+        Function f1actoriel(Int i1) : Int
+        Int w1:=#1 ;
+        Begin
+            If i1 .LE. #1 Then
+                Return #1;
+            Return i1*f1actoriel(i1-w1)
+        End;
+        Function c1omb(Int n1,k1) : Int
+        Begin
+            If n1 .EQ. k1 Or Else k1 .EQ. #0 Then
+                Return #1;
+            If n1 .LT. k1 Or Else k1 .LT. #0 Or Else n1 .LT. #0 Then
+                Return #0;
+            Return c1omb(n1-#1,k1-#1)+ c1omb(n1-#1,k1)
+        End;
+
+        Begin
+         r1esult:=f1actoriel(#10);
+            Print(r1esult) ;
+         r1esult:=c1omb(#10,#5);
+            Print(r1esult)
+
+        End;
