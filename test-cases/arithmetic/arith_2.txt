@@ -1,0 +1,6 @@
+Program p1Main;
+    Int i1:=#8 * (#4 / #2), i2:=#0, i3:=#5;
+    Begin
+        i1 := i1 + i2 * (i3 * (i2/i3));
+        Print(i1)
+    End;

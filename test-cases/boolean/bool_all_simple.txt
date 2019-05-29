@@ -1,0 +1,71 @@
+Program p1Main;
+
+
+
+    Bool b1 := False;
+    Bool b2 := #3 .LT. #5;
+    Bool b3 := #6 .LT. #2 And Then #33 .EQ. #33;
+    Bool b4;
+    Int i1 := #0;
+    Int p1;
+
+
+
+    Begin
+
+
+        b4 := b2 And Then ((b2 Or Else b3) And Then #33 .GT. #5+#17/#23) Or Else True And Then False;
+        Print(b4);
+
+
+
+        If b1 Then
+            i1 := i1 + #1;
+        Print(i1);
+
+
+
+
+        i1 := #0;
+
+        If b2 Then
+            i1 := i1 + #35
+        Else
+            i1 := i1 + #33;
+        Print(i1);
+
+
+
+
+        i1 := #0;
+
+        While i1 .LT. #25 + #75 Do
+            i1 := i1 + #1;
+        Print(i1);
+
+
+
+
+        i1 := #0;
+
+        Case i1
+            #0:
+                i1 := i1 + #37;
+            #1:
+                i1 := i1 + #32;
+        End;
+        Print(i1);
+
+
+
+
+        i1 := #0;
+
+        For p1 := #33 To #78 Do
+            i1 := i1 + #2;
+
+        Print(i1)
+
+
+
+    End;

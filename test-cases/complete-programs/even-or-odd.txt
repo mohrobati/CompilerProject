@@ -1,0 +1,22 @@
+Program p1Main;
+
+    Int r1esult;
+
+    Function i1sEven(Int i1) : Bool
+        Begin
+            While i1 .GT. #0 Do
+                Begin
+                    i1 := i1 - #2
+                End;
+            If i1 .EQ. #0 Then
+                Return True
+            Else
+                Return False
+        End;
+
+    Begin
+
+         r1esult := i1sEven(#454) And Then True;
+         Print(r1esult)
+
+    End;

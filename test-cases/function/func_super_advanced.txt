@@ -1,0 +1,27 @@
+Program p1Main;
+
+    Int a1 := #1;
+
+    Function f1actoriel(Int i1) : Int
+    Begin
+        If i1 .LE. #1 Then
+            Return #1;
+        Return i1*f1actoriel(i1-#1)
+    End;
+
+    Function p1ow(Int n1, k1) : Int
+    Begin
+        If k1 .EQ. #0 Then
+            Return #1;
+        Return n1*p1ow(n1,k1-#1)
+    End;
+
+    Begin
+
+        r1esult:=f1actoriel(#10);
+        Print(r1esult);
+
+        r1esult:=p1ow(#2,#9);
+        Print(r1esult)
+
+    End;

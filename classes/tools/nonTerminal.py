@@ -16,18 +16,17 @@ class nonTerminal:
         self.label = ""
         self.code = ''''''
         self.quad = []
-        self.parameters=[]
-        self.number=""
+        self.parameters = []
+        self.number = ""
 
     # self.otherAttribute=default
     def generate_code(self):
         if self.exp == "":
             return ""
-        if self.label != "" :
+        if self.label != "":
             self.code += self.label + " : "
         self.code += 'if (' + self.exp + ") goto " + self.true + ";\ngoto " + self.false
         return self.code + ";"
-
 
     def __str__(self):
         return self.word

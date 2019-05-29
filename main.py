@@ -2,23 +2,22 @@ from classes.lexer import Lexer
 from classes.parser import Parser
 from classes.toC import ToC
 
-text_input = """
-    Program p1Main;
-        Int a1 := #2;
-        
-        Function f1actoriel(Int i1) : Int 
-        Begin
-            If i1 .LE. #1 Then 
-                Return #1;
-            Return i1*f1actoriel(i1-#1) 
-        End;
-        
-        Begin
-         r1esult:=f1actoriel(#5) + a1;
-            Print(r1esult)
-        End;
-
-"""
+# text_input = """
+#     Program p1Main;
+#         Bool a1;
+#         Function f1actoriel(Int i1) : Bool
+#             Begin
+#                 Return True
+#             End;
+#         Begin
+#             a1 := #3 .LT. #4 Or Else #43 .EQ. #34;
+#             Print(a1)
+#         End;
+#
+# """
+filer = open("test-cases/complete-programs/even-or-odd.txt", "r")
+text_input = filer.read()
+filer.close()
 lexer = Lexer().build()
 parser = Parser()
 parser.build().parse(text_input, lexer, False)

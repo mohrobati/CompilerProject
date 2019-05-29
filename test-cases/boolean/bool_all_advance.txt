@@ -1,0 +1,59 @@
+Program p1Main;
+
+
+    Bool b1 := False;
+    Bool b2 := #3 .LT. #5;
+    Bool b3 := #6 .LT. #2 And Then #33 .EQ. #33 ;
+    Bool b4;
+    Int i1 := #0;
+    Int p1;
+    Int p2;
+
+    Begin
+
+        If b1 Or Else b2 Then
+            Begin
+                If b3 Or Else False Then
+                    Begin
+                        Case i1
+                            #0:
+                                Case p1
+                                    #0:
+                                        p1 := #99;
+                                    #1:
+                                        p1 := #90;
+                                End;
+                            #1:
+                                i1 := i1 + #12;
+                        End
+                    End
+                Else
+                    Begin
+                        While i1 .LE. #10 Do
+                            i1 := i1 + #2
+                    End
+            End
+        Else
+            Begin
+                If (b3 Or Else True) And Then #3 .LE. #2 Then
+                    Begin
+                        For p1 := #0 Downto #-50 Do
+                            Begin
+                                For p2 := #0 To #5 Do
+                                    Begin
+                                        i1 := i1 + #100
+                                    End
+                            End
+                    End
+                Else
+                    Begin
+                        b3 := (b2 And Then ((b2 Or Else b3) And Then #33 .GT. #5+#17/#23) Or Else True And Then False) And Then False
+                    End
+            End;
+
+        Print(i1);
+        Print(p1);
+        Print(b3)
+
+
+    End;

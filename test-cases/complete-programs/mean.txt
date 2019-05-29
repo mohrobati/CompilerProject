@@ -1,0 +1,21 @@
+Program p1Main;
+
+    Int i1,i2,i3,i4,i5,r1esult;
+
+    Function f1(Int i1,i2,i3,i4,i5) : Real
+        Begin
+            Return (i1 + i2 + i3 + i4 + i5)/#5
+        End;
+
+    Begin
+
+         i1 := #3;
+         i2 := #4;
+         i3 := #5;
+         i4 := #6;
+         i5 := #7;
+
+         r1esult := f1(i1,i2,i3,i4,i5);
+         Print(r1esult)
+
+    End;

@@ -114,8 +114,12 @@ class CodeGen:
                 op   = p[3].quad[1]
                 arg2 = p[3].quad[2]
                 container = []
-                self.patch(arg1, arg2, l_true, l_false, op, container)
                 word = ""
+                word += arg1.code
+                word += arg2.code
+                arg1.code = ""
+                arg2.code = ""
+                self.patch(arg1, arg2, l_true, l_false, op, container)
                 for line in container:
                     word += line + "\n"
                 word += l_true + " : " + id + " = true;\n"
@@ -205,7 +209,8 @@ class CodeGen:
                     word = "if (" + id + " > " + dic['exp']['VALUE'] + ") goto " + l_true + ";\n"
             word += "\ngoto " + l_false + ";\n"
             word += l_true + " : \n"
-            p[0].code += (word)
+            p[1].code += (word)
+            print()
 
     def switch_case_tac_generator(self, flag, p, id, value, l_true, l_false):
         if flag:
@@ -252,12 +257,20 @@ class CodeGen:
                 arg1.false = l_false
             arg1.exp = arg1_dic['exp']['lvalue']['ID']
             container.append(arg1.generate_code())
+
         elif 'VALUE' in arg1_dic['exp'].keys():
             if arg1.true == "":
                 arg1.true = l_true
             if arg1.false == "":
                 arg1.false = l_false
             arg1.exp = arg1_dic['exp']['VALUE']
+            container.append(arg1.generate_code())
+
+        elif 'ID' in arg1_dic['exp'].keys():
+            if arg1.true == "":
+                arg1.true = l_true
+            if arg1.false == "":
+                arg1.false = l_false
             container.append(arg1.generate_code())
 
         if 'exp' in arg2_dic['exp'].keys():
@@ -289,12 +302,20 @@ class CodeGen:
                 arg2.false = l_false
             arg2.exp = arg2_dic['exp']['lvalue']['ID']
             container.append(arg2.generate_code())
+
         elif 'VALUE' in arg2_dic['exp'].keys():
             if arg2.true == "":
                 arg2.true = l_true
             if arg2.false == "":
                 arg2.false = l_false
             arg2.exp = arg2_dic['exp']['VALUE']
+            container.append(arg2.generate_code())
+
+        elif 'ID' in arg2_dic['exp'].keys():
+            if arg2.true == "":
+                arg2.true = l_true
+            if arg2.false == "":
+                arg2.false = l_false
             container.append(arg2.generate_code())
 
     def explist_tac_generator(self, flag, p):
@@ -343,6 +364,7 @@ class CodeGen:
         word += next_label + ":\n"
         word += return_temp + " =*(float*)returnValue;\n"
         p[0].code += word
+        p[0].exp = return_temp
         p[0].place = return_temp
 
     def return_tac_generator(self, flag, p,funcId):
