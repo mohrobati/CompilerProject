@@ -40,27 +40,28 @@ class Parser:
         """program : PROGRAM ID SEMI_COLON declistlast block SEMI_COLON"""
         self.xmlGenerator.gen_p_prog_declist(p)
         self.mktables()
-        p[0].code+="goto Main;\n"+p[4].code+"Main:\n"+p[5].code
+        p[0].code+= p[4].code+"Main:\n"+p[5].code
         self.codeGen.backjmp_tac_generator(self.flag,self.returnLine,p)
         codes = p[0].code.split("\n")
+
         t = 0
-        for code in codes:
-            t = t + 1
-            if code[0:2] == "FF":
-                t = t-1
-                break
-        if t != len(codes):
-            codes_tmp = []
-            codes_tmp.append(codes[0])
-            for p in range(t, len(codes)):
-                codes_tmp.append(codes[p])
-            for p in range(1, t):
-                codes_tmp.insert(p-1, codes[p])
-            for code in codes_tmp:
-                self.generatedCode += code + "\n"
-        else:
-            for code in codes[1:]:
-                self.generatedCode += code + "\n"
+        # for code in codes:
+        #     t = t + 1
+        #     if code[0:2] == "FF":
+        #         t = t-1
+        #         break
+        # if t != len(codes):
+        #     codes_tmp = []
+        #     codes_tmp.append(codes[0])
+        #     for p in range(t, len(codes)):
+        #         codes_tmp.append(codes[p])
+        #     for p in range(1, t):
+        #         codes_tmp.insert(p-1, codes[p])
+        #     for code in codes_tmp:
+        #         self.generatedCode += code + "\n"
+        # else:
+        for code in codes[1:]:
+            self.generatedCode += code + "\n"
 
 
 
@@ -169,6 +170,7 @@ class Parser:
     def p_procdec_declist(self, p):
         """procdec : PROCEDURE ID OPEN_PAREN paramdecslast CLOSE_PAREN declistlast block SEMI_COLON"""
         self.xmlGenerator.gen_p_procdec_declist(p)
+        p[0].code +="goto AF"+p[2]+" ;\n"
         p[0].code +="FF" +p[2]+" :\n"
         p[0].code+=p[4].code+p[6].code+p[7].code
         # block
@@ -178,6 +180,7 @@ class Parser:
         self.p_paramdecs_stack.pop()
         p[0].code+="*(float*)returnValue=1;\n"
         p[0].code+="goto longjump;\n"
+        p[0].code+="AF"+p[2]+" :\n"
 
     def p_intro_funcdec(self,p):
         """funcname : FUNCTION ID """
@@ -187,15 +190,18 @@ class Parser:
     def p_funcdec_declist(self, p):
         """funcdec : funcname OPEN_PAREN paramdecslast CLOSE_PAREN COLON type declistlast block SEMI_COLON"""
         self.xmlGenerator.gen_p_funcdec_declist(p)
+        p[0].code +="goto AF" +  self.funcId[self.funcId.__len__()-1]+" ;\n"
+
         p[0].code +="FF" +  self.funcId[self.funcId.__len__()-1]+" :\n"
         p[0].code += p[3].code+p[7].code+p[8].code
         # block
-        p[0].code+="EN"+self.funcId.pop()+" :\n"
+        p[0].code+="EN"+  self.funcId[self.funcId.__len__()-1]+" :\n"
         self.codeGen.declist_back_tac_generator(self.flag,self.p_declist_stack[self.p_declist_stack.__len__()-1],p)
         self.p_declist_stack.pop()
         self.codeGen.paramdec_back_tac_generator(self.flag,self.p_paramdecs_stack[self.p_paramdecs_stack.__len__()-1],p)
         self.p_paramdecs_stack.pop()
         p[0].code+="goto longjump;\n"
+        p[0].code+="AF"+self.funcId.pop()+" :\n"
 
     def p_paramdecs(self, p):
         """paramdecs : paramdec"""

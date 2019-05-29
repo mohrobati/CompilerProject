@@ -1,0 +1,25 @@
+Program p1Main;
+
+    Int a1 := #10;
+    Int r1esult;
+
+    Function f1(Int p1) : Int
+        Function f2(Int p1) : Int
+            Begin
+                Return p1 * #2
+            End;
+
+        Begin
+            Return p1 * #100
+        End;
+
+
+
+    Begin
+         r1esult:=f1(#4);
+         Print(r1esult);
+
+         r1esult:=f2(#4);
+         Print(r1esult)
+
+    End;

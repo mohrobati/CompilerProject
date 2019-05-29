@@ -49,6 +49,6 @@ class ToC:
         cmd = "output.c"
         subprocess.call(["gcc", cmd])
         print("\nOutput:\n")
-        subprocess.call("./a.out")
+        subprocess.call("a.exe")
         print("")
 

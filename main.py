@@ -15,7 +15,7 @@ from classes.toC import ToC
 #         End;
 #
 # """
-filer = open("test-cases/complete-programs/even-or-odd.txt", "r")
+filer = open("test-cases/function/procedure.txt", "r")
 text_input = filer.read()
 filer.close()
 lexer = Lexer().build()
