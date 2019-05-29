@@ -8,17 +8,15 @@ Program p1Main;
             Return p1 * #100
         End;
 
-    Function f2(Int p1) : Int
+    Procedure p2roc(Int p1)
         Begin
-            Return p1 * #2
+            p1 := p1 * #2
         End;
 
 
     Begin
          r1esult:=f1(#4);
          Print(r1esult);
-
-         r1esult:=f2(#4);
-         Print(r1esult)
-
+         p2roc(a1);
+         Print(a1)
     End;

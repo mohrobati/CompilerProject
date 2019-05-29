@@ -1,6 +1,7 @@
 import xmltodict
 import json
 import ast
+from ply import yacc
 
 
 class CodeGen:
@@ -108,7 +109,6 @@ class CodeGen:
             else:
                 dic = ast.literal_eval(json.dumps(xmltodict.parse(str(p[1]))))
                 id = dic['lvalue']['ID']
-
             if len(p[3].quad) != 0:
                 arg1 = p[3].quad[0]
                 op   = p[3].quad[1]
@@ -154,7 +154,13 @@ class CodeGen:
             else:
                 dic = ast.literal_eval(json.dumps(xmltodict.parse(str(p[1]))))
                 if p[1].exp is "":
-                    p[1].exp = dic['exp']['lvalue']['ID']
+                    if 'lvalue' in dic['exp'].keys():
+                        p[1].exp = dic['exp']['lvalue']['ID']
+                    elif 'VALUE' in dic['exp'].keys():
+                        p[1].exp = dic['exp']['VALUE']
+                    elif 'place' in dic['exp'].keys():
+                        p[1].exp = dic['exp']['place']
+
                 word = "if (" + p[1].exp + ") goto " + l_true + ";"
                 word += "\ngoto " + l_false + ";\n"
                 word += l_true + " : "
@@ -179,6 +185,14 @@ class CodeGen:
                     p[1].code += line + "\n"
                 p[1].code += (l_true + " : ")
             else:
+                dic = ast.literal_eval(json.dumps(xmltodict.parse(str(p[1]))))
+                if p[1].exp is "":
+                    if 'lvalue' in dic['exp'].keys():
+                        p[1].exp = dic['exp']['lvalue']['ID']
+                    elif 'VALUE' in dic['exp'].keys():
+                        p[1].exp = dic['exp']['VALUE']
+                    elif 'place' in dic['exp'].keys():
+                        p[1].exp = dic['exp']['place']
                 word = "if (" + p[1].exp + ") goto " + l_true + ";"
                 word += "\ngoto " + l_false + ";\n"
                 word += l_true + " : "
@@ -317,13 +331,11 @@ class CodeGen:
                 arg2.false = l_false
             container.append(arg2.generate_code())
 
-    def explist_tac_generator(self, flag, p):
+    def explist_tac_generator(self, flag, p, new_temp, l_true, l_false, l_next):
         if flag:
             pass
         word = "Top = Top - 1 ;\n*Top = "
-
         if p[0].number == 1:
-
             dic = ast.literal_eval(json.dumps(xmltodict.parse(str(p[1]))))
             if 'place' in dic['exp'].keys():
                 word += dic['exp']['place']
@@ -332,6 +344,9 @@ class CodeGen:
             elif 'VALUE' in dic['exp'].keys():
                 word += dic['exp']['VALUE']
             else:
+                if p[1].type == 'bool':
+                    p[0].code += self.return_bool_generator(p, new_temp, l_true, l_false, l_next, 1)
+                    p[1].place = new_temp
                 word += p[1].place
 
         else:
@@ -344,6 +359,9 @@ class CodeGen:
             elif 'VALUE' in dic['exp'].keys():
                 word += dic['exp']['VALUE']
             else:
+                if p[3].type == 'bool':
+                    p[0].code += self.return_bool_generator(p, new_temp, l_true, l_false, l_next, 3)
+                    p[3].place = new_temp
                 word += p[3].place
 
         word += ";\n"
@@ -366,22 +384,55 @@ class CodeGen:
         p[0].exp = return_temp
         p[0].place = return_temp
 
-    def return_tac_generator(self, flag, p,funcId):
+    def return_tac_generator(self, flag, p, funcId, new_temp, l_true, l_false, l_next):
         if flag:
             pass
-        dic = ast.literal_eval(json.dumps(xmltodict.parse(str(p[2]))))
-        word="*(float*)returnValue="
-        if 'place' in dic['exp'].keys():
-            word += dic['exp']['place']
-        elif 'lvalue' in dic['exp'].keys():
-            word += dic['exp']['lvalue']['ID']
-        elif 'VALUE' in dic['exp'].keys():
-            word += dic['exp']['VALUE']
         else:
-            word += p[2].place
-        word+=";\n"
-        word+="goto EN"+funcId+";\n"
-        p[0].code+=p[2].code+word
+            word = "*(float*)returnValue="
+            dic = ast.literal_eval(json.dumps(xmltodict.parse(str(p[2]))))
+            if 'place' in dic['exp'].keys():
+                word += dic['exp']['place']
+            elif 'lvalue' in dic['exp'].keys():
+                word += dic['exp']['lvalue']['ID']
+            elif 'VALUE' in dic['exp'].keys():
+                word += dic['exp']['VALUE']
+            else:
+                if p[2].type == 'bool':
+                    p[0].code += self.return_bool_generator(p, new_temp, l_true, l_false, l_next, 2)
+                    p[2].place = new_temp
+                word += p[2].place
+
+            word+=";\n"
+            word+="goto EN"+funcId+";\n"
+            p[0].code+=p[2].code+word
+
+    def return_bool_generator(self, p, new_temp, l_true, l_false, l_next, i):
+        if len(p[i].quad) != 0:
+            arg1 = p[i].quad[0]
+            op   = p[i].quad[1]
+            arg2 = p[i].quad[2]
+            container = []
+            word = ""
+            word += arg1.code
+            word += arg2.code
+            arg1.code = ""
+            arg2.code = ""
+            self.patch(arg1, arg2, l_true, l_false, op, container)
+            for line in container:
+                word += line + "\n"
+            word += l_true + " : " + new_temp + " = true;\n"
+            word += "goto " + l_next + ";\n"
+            word += l_false + " : " + new_temp + " = false;\n"
+            word += l_next + " : \n"
+            return p[i].code+word
+        else:
+            word = "if (" + p[i].exp + ") goto " + l_true + ";"
+            word += "\ngoto " + l_false + ";\n"
+            word += l_true + " : " + new_temp + " = true;\n"
+            word += "goto " + l_next + ";\n"
+            word += l_false + " : " + new_temp + " = false;\n"
+            word += l_next + " : \n"
+            return p[i].code+word
 
     def paramdec_append_tac_generator(self, flag, parameters,p, tmp_list):
         if flag:

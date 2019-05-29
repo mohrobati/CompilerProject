@@ -62,7 +62,7 @@ class Parser:
         #     for code in codes_tmp:
         #         self.generatedCode += code + "\n"
         # else:
-        for code in codes[1:]:
+        for code in codes[0:]:
             self.generatedCode += code + "\n"
 
 
@@ -420,7 +420,8 @@ class Parser:
     def p_stmt_return(self, p):
         """stmt : RETURN exp"""
         self.xmlGenerator.gen_p_stmt_return(p)
-        self.codeGen.return_tac_generator(self.flag,p,self.funcId[self.funcId.__len__()-1])
+        self.codeGen.return_tac_generator(self.flag,p,self.funcId[self.funcId.__len__()-1], self.new_temp()
+                                          , self.new_label(), self.new_label(), self.new_label())
 
     def p_stmt_exp(self, p):
         """stmt : exp"""
@@ -555,13 +556,13 @@ class Parser:
         """explist : exp"""
         self.xmlGenerator.gen_p_explist(p)
         p[0].number = 1
-        self.codeGen.explist_tac_generator(self.flag, p)
+        self.codeGen.explist_tac_generator(self.flag, p, self.new_temp(), self.new_label(), self.new_label(), self.new_label())
 
     def p_explist_ext(self, p):
         """explist : explist SEPARATOR exp"""
         self.xmlGenerator.gen_p_explist_ext(p)
         p[0].number = p[1].number + 1
-        self.codeGen.explist_tac_generator(self.flag, p)
+        self.codeGen.explist_tac_generator(self.flag, p, self.new_temp(), self.new_label(), self.new_label(), self.new_label())
 
 
     def p_error(self, p):
@@ -584,13 +585,7 @@ class Parser:
 
     def new_temp(self):
         string = 'TT' + str(self.t_ctr)
-
-        self.debv(self.p_temp_stack)
-        # self.debv(self.p_temp_stack[self.p_temp_stack.__len__()-1])
         (self.p_temp_stack[self.p_temp_stack.__len__()-1]).insert(self.p_temp_stack[self.p_temp_stack.__len__()-1].__len__()-1,string)
-        self.debv(self.p_temp_stack)
-        # self.debv(self.p_temp_stack[self.p_temp_stack.__len__()-1])
-        print("\n\n\n")
         self.t_ctr += 1
         return string
 
@@ -598,11 +593,8 @@ class Parser:
         string = 'LL' + str(self.l_ctr)
         self.l_ctr += 1
         return string
-    def debv(self,ss):
-        print("NEW")
-        for i in ss:
-            print(i)
-        print("\n")
+
+
     def mktables(self):
         doc = xmltodict.parse(self.xmlGenerator.w)
         # print(ast.literal_eval(json.dumps(doc,indent=10)))

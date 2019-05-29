@@ -1,0 +1,21 @@
+Program p1Main;
+
+    Bool b1 := True;
+    Bool b2 := False;
+
+    Function o1r(Bool b1,b2) : Bool
+        Begin
+            Return b1 Or Else b2
+        End;
+
+    Function a1nd(Bool b1,b2) : Bool
+        Begin
+            Return b1 And Then b2
+        End;
+
+    Begin
+
+         r1esult := a1nd(#5 .GT. #4, #54 .LT. #10);
+         Print(r1esult)
+
+    End;

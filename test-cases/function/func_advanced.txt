@@ -8,18 +8,14 @@ Program p1Main;
             Begin
                 Return p1 * #2
             End;
-
         Begin
-            Return p1 * #100
+            Return p1 * f2(#4)
         End;
 
 
 
     Begin
          r1esult:=f1(#4);
-         Print(r1esult);
-
-         r1esult:=f2(#4);
          Print(r1esult)
 
     End;
