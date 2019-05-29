@@ -4,15 +4,18 @@ from classes.toC import ToC
 
 text_input = """
     Program p1Main;
-        Int i2 := #34;
-        Int i3 := #0;
+        Int a1 := #2;
+        
+        Function f1actoriel(Int i1) : Int 
         Begin
-            While i2 .GT. #30 Do
-                Begin
-                    i3 := i3 + #1;
-                    i2 := i2 - #1   
-                End;
-            Print(i3)
+            If i1 .LE. #1 Then 
+                Return #1;
+            Return i1*f1actoriel(i1-#1) 
+        End;
+        
+        Begin
+         r1esult:=f1actoriel(#5) + a1;
+            Print(r1esult)
         End;
 
 """

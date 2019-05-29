@@ -30,7 +30,7 @@ class ToC:
             i = i + 1
         code += ";\n"
 
-        code += "float stack[19000], llk[10099];\nfloat *Top ;\nvoid *returnValue ;\n\nint main() { \n\n"
+        code += "float stack[19000], llk[10099];\nfloat *Top ;\nvoid  *returnValue ;\n\nint main() { \n\n"
         code += "Top = stack+18000;\nreturnValue = llk+10009;\n\n"
         code += self.generated_code
         code += "return 0;\n\n}\n"

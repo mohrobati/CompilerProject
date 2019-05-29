@@ -156,7 +156,10 @@ class Parser:
         """paramdecslast : paramdecs"""
         p[0] = p[1]
         self.p_paramdecs_stack.append(p[0].parameters)
-        self.codeGen.paramdec_append_tac_generator(self.flag,p[0].parameters,p)
+        tmp_list = []
+        for i in range(0, len(p[0].parameters)):
+            tmp_list.append(self.new_temp())
+        self.codeGen.paramdec_append_tac_generator(self.flag,p[0].parameters, p, tmp_list)
 
     def p_paramdecs_empty(self, p):
         """paramdecslast : """
@@ -180,6 +183,7 @@ class Parser:
         """funcname : FUNCTION ID """
         self.xmlGenerator.gen_p_funcname(p)
         self.funcId.append(p[2])
+
     def p_funcdec_declist(self, p):
         """funcdec : funcname OPEN_PAREN paramdecslast CLOSE_PAREN COLON type declistlast block SEMI_COLON"""
         self.xmlGenerator.gen_p_funcdec_declist(p)
@@ -197,7 +201,6 @@ class Parser:
         """paramdecs : paramdec"""
         self.xmlGenerator.gen_p_paramdecs(p)
         p[0].parameters = p[1].parameters
-
 
     def p_paramdecs_ext(self, p):
         """paramdecs : paramdecs SEMI_COLON paramdec"""
@@ -289,7 +292,7 @@ class Parser:
     def p_print(self, p):
         """stmt : PRINT OPEN_PAREN ID CLOSE_PAREN"""
         self.xmlGenerator.gen_p_print(p)
-        p[0].code = "printf(\"%f\", " + p[3] + ");\n"
+        p[0].code = "printf(\"%f\\n\", " + p[3] + ");\n"
 
     def p_stmt_while(self, p):
         """stmt : WHILE controlwhileexp DO block"""

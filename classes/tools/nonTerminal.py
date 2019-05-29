@@ -23,7 +23,8 @@ class nonTerminal:
     def generate_code(self):
         if self.exp == "":
             return ""
-        if self.label != "":  self.code += self.label + " : "
+        if self.label != "" :
+            self.code += self.label + " : "
         self.code += 'if (' + self.exp + ") goto " + self.true + ";\ngoto " + self.false
         return self.code + ";"
 

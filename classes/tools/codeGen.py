@@ -97,29 +97,38 @@ class CodeGen:
             else:
                 word += p[3].place
             p[0].exp = word
-            p[0].code = p[1].code+p[3].code+word
+            p[0].code = p[1].code+p[3].code
 
     def boolean_tac_generator(self, flag, p, l_true, l_false, l_next):
         if flag:
             pass
         else:
+            if type(p[1]) == str:
+                id = p[1]
+            else:
+                dic = ast.literal_eval(json.dumps(xmltodict.parse(str(p[1]))))
+                id = dic['lvalue']['ID']
+
             if len(p[3].quad) != 0:
                 arg1 = p[3].quad[0]
                 op   = p[3].quad[1]
                 arg2 = p[3].quad[2]
-                self.patch(arg1, arg2, l_true, l_false, op, p)
+                container = []
+                self.patch(arg1, arg2, l_true, l_false, op, container)
                 word = ""
-                word += l_true + " : " + p[1] + " = true;\n"
+                for line in container:
+                    word += line + "\n"
+                word += l_true + " : " + id + " = true;\n"
                 word += "goto " + l_next + ";\n"
-                word += l_false + " : " + p[1] + " = false;\n"
+                word += l_false + " : " + id + " = false;\n"
                 word += l_next + " : \n"
                 return p[3].code+word
             else:
-                word = "if (" + p[3].exp + ") goto " + l_true + ";\n"
+                word = "if (" + p[3].exp + ") goto " + l_true + ";"
                 word += "\ngoto " + l_false + ";\n"
-                word += l_true + " : " + p[1] + " = true;\n"
+                word += l_true + " : " + id + " = true;\n"
                 word += "goto " + l_next + ";\n"
-                word += l_false + " : " + p[1] + " = false;\n"
+                word += l_false + " : " + id + " = false;\n"
                 word += l_next + " : \n"
                 return p[3].code+word
 
@@ -127,14 +136,16 @@ class CodeGen:
         if flag:
             pass
         else:
-            p[1].code = ""
             p[1].true = l_true
             p[1].false = l_false
             if len(p[1].quad) != 0:
                 arg1 = p[1].quad[0]
                 op   = p[1].quad[1]
                 arg2 = p[1].quad[2]
-                self.patch(arg1, arg2, l_true, l_false, op)
+                container = []
+                self.patch(arg1, arg2, l_true, l_false, op, container)
+                for line in container:
+                    p[1].code += line + "\n"
                 p[1].code += (l_true + " : ")
             else:
                 dic = ast.literal_eval(json.dumps(xmltodict.parse(str(p[1]))))
@@ -142,7 +153,7 @@ class CodeGen:
                     p[1].exp = dic['exp']['lvalue']['ID']
                 word = "if (" + p[1].exp + ") goto " + l_true + ";"
                 word += "\ngoto " + l_false + ";\n"
-                word += l_true + " : \n"
+                word += l_true + " : "
 
                 p[1].code += (word)
 
@@ -150,21 +161,23 @@ class CodeGen:
         if flag:
             pass
         else:
-            p[1].code = ""
             p[1].begin = l_begin
-            p[1].code += (l_begin + " : \n")
+            p[1].code += (l_begin + " : ")
             p[1].true = l_true
             p[1].false = l_false
             if len(p[1].quad) != 0:
                 arg1 = p[1].quad[0]
                 op = p[1].quad[1]
                 arg2 = p[1].quad[2]
-                self.patch(arg1, arg2, l_true, l_false, op)
+                container = []
+                self.patch(arg1, arg2, l_true, l_false, op, container)
+                for line in container:
+                    p[1].code += line + "\n"
                 p[1].code += (l_true + " : ")
             else:
-                word = "if (" + p[1].exp + ") goto " + l_true + ";\n"
-                word += "goto " + l_false + ";\n"
-                word += l_true + " : \n"
+                word = "if (" + p[1].exp + ") goto " + l_true + ";"
+                word += "\ngoto " + l_false + ";\n"
+                word += l_true + " : "
                 p[1].code += (word)
 
     def for_tac_generator(self, flag, p, id, l_true, l_false, l_begin, up):
@@ -190,7 +203,6 @@ class CodeGen:
                     word = "if (" + id + " > " + dic['exp']['lvalue']['ID'] + ") goto " + l_true + ";\n"
                 else:
                     word = "if (" + id + " > " + dic['exp']['VALUE'] + ") goto " + l_true + ";\n"
-
             word += "\ngoto " + l_false + ";\n"
             word += l_true + " : \n"
             p[0].code += (word)
@@ -206,10 +218,9 @@ class CodeGen:
             word += l_true + " : \n"
             p[0].code+=(word)
 
-    def patch(self, arg1, arg2, l_true, l_false, op, p):
+    def patch(self, arg1, arg2, l_true, l_false, op, container):
         arg1_dic = ast.literal_eval(json.dumps(xmltodict.parse(str(arg1))))
         arg2_dic = ast.literal_eval(json.dumps(xmltodict.parse(str(arg2))))
-
         if 'exp' in arg1_dic['exp'].keys():
             if len(arg1.quad) != 0:
                 if arg1.true != "":
@@ -224,7 +235,7 @@ class CodeGen:
                         arg1.quad[0].false = arg1.false
                 if arg1.label != "":
                     arg1.quad[0].label = arg1.label
-                self.patch(arg1.quad[0], arg1.quad[2], l_true, l_false, arg1.quad[1], p)
+                self.patch(arg1.quad[0], arg1.quad[2], l_true, l_false, arg1.quad[1], container)
             else:
                 if op == 'And Then':
                     if arg1.false == "":
@@ -232,7 +243,7 @@ class CodeGen:
                 elif op == 'Or Else':
                     if arg1.true == "":
                         arg1.true = l_true
-                p[3].code += (arg1.generate_code()) + "\n"
+                container.append(arg1.generate_code())
 
         elif 'lvalue' in arg1_dic['exp'].keys():
             if arg1.true == "":
@@ -240,14 +251,14 @@ class CodeGen:
             if arg1.false == "":
                 arg1.false = l_false
             arg1.exp = arg1_dic['exp']['lvalue']['ID']
-            p[3].code += (arg1.generate_code()) + "\n"
+            container.append(arg1.generate_code())
         elif 'VALUE' in arg1_dic['exp'].keys():
             if arg1.true == "":
                 arg1.true = l_true
             if arg1.false == "":
                 arg1.false = l_false
             arg1.exp = arg1_dic['exp']['VALUE']
-            p[3].code += (arg1.generate_code()) + "\n"
+            container.append(arg1.generate_code())
 
         if 'exp' in arg2_dic['exp'].keys():
             if len(arg2.quad) != 0:
@@ -263,13 +274,13 @@ class CodeGen:
                         arg2.quad[0].false = arg2.false
                 if arg2.label != "":
                     arg2.quad[0].label = arg2.label
-                self.patch(arg2.quad[0], arg2.quad[2], l_true, l_false, arg2.quad[1], p)
+                self.patch(arg2.quad[0], arg2.quad[2], l_true, l_false, arg2.quad[1], container)
             else:
                 if arg2.true == "":
                     arg2.true = l_true
                 if arg2.false == "":
                     arg2.false = l_false
-                p[3].code += (arg2.generate_code()) + "\n"
+                container.append(arg2.generate_code())
 
         elif 'lvalue' in arg2_dic['exp'].keys():
             if arg2.true == "":
@@ -277,14 +288,14 @@ class CodeGen:
             if arg2.false == "":
                 arg2.false = l_false
             arg2.exp = arg2_dic['exp']['lvalue']['ID']
-            p[3].code += (arg2.generate_code()) + "\n"
+            container.append(arg2.generate_code())
         elif 'VALUE' in arg2_dic['exp'].keys():
             if arg2.true == "":
                 arg2.true = l_true
             if arg2.false == "":
                 arg2.false = l_false
             arg2.exp = arg2_dic['exp']['VALUE']
-            p[3].code += (arg2.generate_code()) + "\n"
+            container.append(arg2.generate_code())
 
     def explist_tac_generator(self, flag, p):
         if flag:
@@ -351,17 +362,21 @@ class CodeGen:
         word+="goto EN"+funcId+";\n"
         p[0].code+=p[2].code+word
 
-    def paramdec_append_tac_generator(self, flag, parameters,p):
+    def paramdec_append_tac_generator(self, flag, parameters,p, tmp_list):
         if flag:
             pass
         parameters.reverse()
+        i = 0
         for param in parameters:
-            p[0].code += "Temp"+param+" = "+param+";\n"
+            p[0].code += tmp_list[i] + " = "+param+";\n"
             p[0].code += param+" = *Top ; \n"
             p[0].code += "Top = Top + 1;\n"
+            i = i + 1
+        i = 0
         for param in parameters:
             p[0].code += "Top = Top - 1;\n"
-            p[0].code += "*Top = "+"Temp"+param+";\n"
+            p[0].code += "*Top = " + tmp_list[i] +";\n"
+            i = i + 1
 
     def declist_back_tac_generator(self, flag, parameters, p):
         if flag:
