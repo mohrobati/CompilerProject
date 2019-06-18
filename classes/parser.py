@@ -191,7 +191,7 @@ class Parser:
         self.p_declist_stack.pop()
         self.codeGen.paramdec_back_tac_generator(self.flag,self.p_paramdecs_stack[self.p_paramdecs_stack.__len__()-1],p)
         self.p_paramdecs_stack.pop()
-        p[0].code+="*(float*)returnValue=1;\n"
+        p[0].code+="returnValue=1;\n"
         p[0].code+="goto longjump;\n"
         p[0].code+="AF"+p[2]+" :\n"
 
@@ -318,7 +318,7 @@ class Parser:
     def p_print(self, p):
         """stmt : PRINT OPEN_PAREN ID CLOSE_PAREN"""
         self.xmlGenerator.gen_p_print(p)
-        p[0].code = "printf(\"%f\\n\", " + p[3] + ");\n"
+        p[0].code = "printf(\"%lf\\n\", " + p[3] + ");\n"
 
     def p_stmt_while(self, p):
         """stmt : WHILE controlwhileexp DO block"""

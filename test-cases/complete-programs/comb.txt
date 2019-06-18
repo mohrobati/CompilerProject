@@ -12,7 +12,7 @@ Program p1Main;
 
     Begin
 
-     r1esult:=c1omb(#6,#2);
+     r1esult:=c1omb(#20,#10);
         Print(r1esult)
 
     End;

@@ -379,7 +379,7 @@ class CodeGen:
         word =""
         word += "goto FF" + p[1] + " ;\n"
         word += next_label + ":\n"
-        word += return_temp + " =*(float*)returnValue;\n"
+        word += return_temp + " =returnValue;\n"
         p[0].code += word
         p[0].exp = return_temp
         p[0].place = return_temp
@@ -388,7 +388,7 @@ class CodeGen:
         if flag:
             pass
         else:
-            word = "*(float*)returnValue="
+            word = "returnValue="
             dic = ast.literal_eval(json.dumps(xmltodict.parse(str(p[2]))))
             if 'place' in dic['exp'].keys():
                 word += dic['exp']['place']

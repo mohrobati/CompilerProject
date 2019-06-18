@@ -10,8 +10,8 @@ class ToC:
     def make_c_code(self):
         code = ""
         code += "#include <stdio.h>\n#include <stdbool.h>\n\n"
-        code += "float r1esult ,gotoTemp;\n"
-        code += "float "
+        code += "double r1esult ,gotoTemp;\n"
+        code += "double "
         for i in range(0, self.tmp_ctr+1):
             code += "TT" + str(i)
             if i != self.tmp_ctr:
@@ -21,7 +21,7 @@ class ToC:
         for table in self.symbolTable:
             for entity in table.entities:
                 variables.append(entity.name)
-        code += "float "
+        code += "double "
         i = 0
         for variable in variables:
             code += variable
@@ -30,8 +30,8 @@ class ToC:
             i = i + 1
         code += ";\n"
 
-        code += "float stack[19000], llk[10099];\nfloat *Top ;\nvoid  *returnValue ;\n\nint main() { \n\n"
-        code += "Top = stack+18000;\nreturnValue = llk+10009;\n\n"
+        code += "double stack[19000];\ndouble *Top ;\ndouble  returnValue ;\n\nint main() { \n\n"
+        code += "Top = stack+18000;\n\n"
         code += self.generated_code
         code += "return 0;\n\n}\n"
 
@@ -49,6 +49,6 @@ class ToC:
         cmd = "output.c"
         subprocess.call(["gcc", cmd])
         print("\nOutput:\n")
-        subprocess.call("./a.out")
+        subprocess.call("a.exe")
         print("")
 
