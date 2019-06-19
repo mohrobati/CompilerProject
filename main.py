@@ -11,7 +11,7 @@ from classes.toC import ToC
 #         End;
 # """
 
-filer = open("test-cases/arithmetic/arith_1.txt", "r")                     #3.454545
+# filer = open("test-cases/arithmetic/arith_1.txt", "r")                     #3.454545
 # filer = open("test-cases/arithmetic/arith_2.txt", "r")                     #16
 # filer = open("test-cases/arithmetic/arith_3.txt", "r")                     #655
 # filer = open("test-cases/boolean/bool_all_simple.txt", "r")                #1,0,35,100,37,90
@@ -29,7 +29,7 @@ filer = open("test-cases/arithmetic/arith_1.txt", "r")                     #3.45
 # filer = open("test-cases/sample/boolean.txt", "r")                         #15,3,35,15,0,38
 # filer = open("test-cases/sample/calculator.txt", "r")                      #-1,-4
 # filer = open("test-cases/sample/fibonachi.txt", "r")                       #102334155
-# filer = open("test-cases/sample/arithmetic.txt", "r")                      #15,3,35
+filer = open("test-cases/sample/arithmetic.txt", "r")                      #15,3,35
 
 text_input = filer.read()
 filer.close()

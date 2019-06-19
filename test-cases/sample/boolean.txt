@@ -7,7 +7,7 @@ Begin
 	Print(n1);
 	Print(n2);
 	Print(n3);
-	
+
 	If(n1 .GT. #2) Then Begin
 		While(n2 .GT. #0) Do Begin
 			n3 := n3 + #1;

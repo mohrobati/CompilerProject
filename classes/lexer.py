@@ -9,7 +9,7 @@ class Lexer():
         'SUB', 'THEN', 'FUNCTION', 'CLOSE_PAREN', 'DIV', 'ELSE',
         'EQ', 'FALSE', 'SEMI_COLON', 'RETURN', 'BOOL', 'LT',
         'BEGIN', 'ID', 'CASE', 'DOWNTO', 'GE', 'NE', 'INTEGER', 'REALNUMBER',
-        'ASSIGN','PRINT' #'ERROR'
+        'ASSIGN', 'PRINT'  # 'ERROR'
     ]
     reserved = {
         # Conditional
@@ -25,7 +25,7 @@ class Lexer():
         'Real': 'REAL',
         # Other Keywords
         'Program': 'PROGRAM',
-        'Print' : 'PRINT',
+        'Print': 'PRINT',
         'To': 'TO',
         'True': 'TRUE',
         'False': 'FALSE',
@@ -68,9 +68,13 @@ class Lexer():
         return t
 
     def t_ID(self, t):
-        r'[a-zA-Z_][a-zA-Z0-9_]*'
+        r'[a-zA-Z][a-zA-Z0-9_]*'
         if t.value in self.reserved:
             t.type = self.reserved[t.value]
+        if t.type == 'ID' and (t.value.__len__() < 2 or not t.value[1] in {'0', '1', '2', '3'
+                                                                           , '4', '5', '6', '7'
+                                                                           , '8', '9'}):
+            raise Exception('SyntaxError: invalid syntax at ', t.value[0])
         return t
 
     def t_TRUE(self, t):
@@ -82,6 +86,7 @@ class Lexer():
         r'False'
         t.value = False
         return t
+
     def t_ERROR(self, t):
         r"""(\#[a-zA-Z0-9_\?\#]*[a-df-zA-Df-z\#]+[0-9a-zA-Z_\?\#]*)
         | ([a-zA-Z0-9_\?\#]*\#[a-zA-Z0-9_\?\#]*[a-df-zA-Df-z\#]+[0-9a-zA-Z_\?\#]*)
